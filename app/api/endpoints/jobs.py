@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
@@ -159,8 +159,12 @@ async def live_jobs(
 
 
 @router.post("", response_model=ScrapeJobOut, status_code=201)
-async def create_job(data: ScrapeJobCreate, db: AsyncSession = Depends(get_db)):
-    from app.tasks.scraper import scrape_university
+async def create_job(
+    data: ScrapeJobCreate,
+    background_tasks: BackgroundTasks,
+    db: AsyncSession = Depends(get_db),
+):
+    from app.tasks.scraper import _scrape_university_async_in_thread
 
     scope = JobScope.ALL_UNIVERSITIES if data.scope == "ALL_UNIVERSITIES" else JobScope.SINGLE_UNIVERSITY
 
@@ -178,9 +182,9 @@ async def create_job(data: ScrapeJobCreate, db: AsyncSession = Depends(get_db)):
     await db.refresh(job)
 
     if scope == JobScope.SINGLE_UNIVERSITY:
-        scrape_university.delay(data.university_id, job.id)
+        background_tasks.add_task(_scrape_university_async_in_thread, data.university_id, job.id)
     else:
-        # Queue jobs for all universities with websites
+        # Queue child jobs for all universities with websites, run in thread pool
         q = select(University).where(University.website.isnot(None))
         if data.status_filters:
             q = q.where(University.scrape_status.in_(data.status_filters))
@@ -196,7 +200,7 @@ async def create_job(data: ScrapeJobCreate, db: AsyncSession = Depends(get_db)):
             db.add(child_job)
             await db.commit()
             await db.refresh(child_job)
-            scrape_university.delay(uni.id, child_job.id)
+            background_tasks.add_task(_scrape_university_async_in_thread, uni.id, child_job.id)
 
     return job
 

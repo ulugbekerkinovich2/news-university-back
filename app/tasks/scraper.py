@@ -565,6 +565,19 @@ def scrape_university(self, university_id: str, job_id: str):
         loop.close()
 
 
+def _scrape_university_async_in_thread(university_id: str, job_id: str):
+    """
+    Thread-safe wrapper for FastAPI BackgroundTasks.
+    Creates its own event loop — no Celery worker required.
+    """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    try:
+        loop.run_until_complete(_scrape_university_async(university_id, job_id))
+    finally:
+        loop.close()
+
+
 @celery_app.task(name="tasks.scrape_all_universities")
 def scrape_all_universities():
     """Periodic task: queue jobs for all universities that have a website."""
@@ -591,4 +604,4 @@ def scrape_all_universities():
             db.add(job)
             db.commit()
             db.refresh(job)
-            scrape_university.delay(uni.id, job.id)
+            _scrape_university_async_in_thread(uni.id, job.id)
