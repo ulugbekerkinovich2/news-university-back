@@ -157,6 +157,16 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
 
+class SystemSetting(Base):
+    """Key-value store for app configuration (e.g. scheduler interval)."""
+    __tablename__ = "system_settings"
+
+    key = Column(String, primary_key=True)
+    value = Column(Text, nullable=False)
+    description = Column(String, nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 class ApiKey(Base):
     __tablename__ = "api_keys"
 

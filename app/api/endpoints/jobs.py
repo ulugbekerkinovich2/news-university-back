@@ -23,6 +23,7 @@ class ScrapeJobOut(BaseModel):
     id: str
     scope: str
     university_id: Optional[str]
+    university_name: Optional[str] = None
     status: str
     started_at: Optional[datetime]
     finished_at: Optional[datetime]
@@ -41,6 +42,22 @@ class ScrapeJobEventOut(BaseModel):
     message: Optional[str]
     timestamp: datetime
     counters_json: Optional[dict]
+
+    class Config:
+        orm_mode = True
+
+
+class LiveJobOut(BaseModel):
+    id: str
+    scope: str
+    university_id: Optional[str]
+    university_name: Optional[str]
+    status: str
+    started_at: Optional[datetime]
+    finished_at: Optional[datetime]
+    created_at: datetime
+    totals_json: Optional[dict]
+    events: List[ScrapeJobEventOut] = []
 
     class Config:
         orm_mode = True
@@ -75,6 +92,70 @@ async def active_jobs(db: AsyncSession = Depends(get_db)):
         .order_by(ScrapeJob.created_at.desc())
     )
     return result.scalars().all()
+
+
+@router.get("/live", response_model=List[LiveJobOut])
+async def live_jobs(
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+):
+    """Return recent jobs (active + last N finished) with university name + events.
+    Designed for real-time dashboard polling — single request for everything."""
+    jobs_result = await db.execute(
+        select(ScrapeJob)
+        .order_by(ScrapeJob.created_at.desc())
+        .limit(limit)
+    )
+    jobs = jobs_result.scalars().all()
+
+    # Batch load universities
+    uni_ids = {j.university_id for j in jobs if j.university_id}
+    unis = {}
+    if uni_ids:
+        u_result = await db.execute(
+            select(University).where(University.id.in_(uni_ids))
+        )
+        for u in u_result.scalars().all():
+            unis[u.id] = u.name_uz
+
+    # Batch load events (last 20 per job)
+    job_ids = [j.id for j in jobs]
+    events_result = await db.execute(
+        select(ScrapeJobEvent)
+        .where(ScrapeJobEvent.job_id.in_(job_ids))
+        .order_by(ScrapeJobEvent.timestamp.asc())
+    )
+    all_events = events_result.scalars().all()
+
+    events_by_job: dict[str, list] = {}
+    for ev in all_events:
+        events_by_job.setdefault(ev.job_id, []).append(ev)
+
+    result = []
+    for job in jobs:
+        job_events = events_by_job.get(job.id, [])[-20:]  # last 20
+        result.append(LiveJobOut(
+            id=job.id,
+            scope=str(job.scope),
+            university_id=job.university_id,
+            university_name=unis.get(job.university_id) if job.university_id else None,
+            status=str(job.status),
+            started_at=job.started_at,
+            finished_at=job.finished_at,
+            created_at=job.created_at,
+            totals_json=job.totals_json,
+            events=[ScrapeJobEventOut(
+                id=e.id,
+                job_id=e.job_id,
+                university_id=e.university_id,
+                stage=str(e.stage),
+                message=e.message,
+                timestamp=e.timestamp,
+                counters_json=e.counters_json,
+            ) for e in job_events],
+        ))
+
+    return result
 
 
 @router.post("", response_model=ScrapeJobOut, status_code=201)
