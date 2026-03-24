@@ -12,9 +12,12 @@ from app.api import api_router
 from app.models import University, NewsPost, ScrapeJob, ScrapeJobEvent, MediaAsset, User, ApiKey
 
 
+from fastapi.staticfiles import StaticFiles
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     os.makedirs("data", exist_ok=True)
+    os.makedirs("static/logos", exist_ok=True)
     await init_db()
     yield
 
@@ -38,6 +41,9 @@ app.add_middleware(
 
 # API routes
 app.include_router(api_router)
+
+# Static files for uploads
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 # ── SQLAdmin ──────────────────────────────────────────────────────────────────

@@ -487,53 +487,50 @@ async def _scrape_university_async(university_id: str, job_id: str):
 
                 article_links: Set[str] = set()
 
-                # 1. RSS feeds (best quality)
-                rss_links = await _discover_via_rss(client, base_url)
-                if rss_links:
-                    article_links |= rss_links
-                    await _add_event(
-                        db, job_id, university_id, ScrapeStage.DISCOVER,
-                        f"RSS: found {len(rss_links)} articles"
-                    )
+                # ── LANGUAGE ROOTS DISCOVERY ────────────────────────────
+                all_root_urls = {base_url}
+                homepage_resp = await _fetch(client, base_url)
+                if homepage_resp:
+                    lang_urls = _discover_language_folders(homepage_resp.text, base_url)
+                    all_root_urls |= lang_urls
 
-                # 2. Sitemap.xml
-                if len(article_links) < MAX_LINKS_PER_SITE:
-                    sitemap_links = await _discover_via_sitemap(client, base_url)
-                    article_links |= sitemap_links
-                    if sitemap_links:
-                        await _add_event(
-                            db, job_id, university_id, ScrapeStage.DISCOVER,
-                            f"Sitemap: found {len(sitemap_links)} articles"
-                        )
+                await _add_event(
+                    db, job_id, university_id, ScrapeStage.DISCOVER,
+                    f"Aniqlangan til bo'limlari: {', '.join(all_root_urls)}"
+                )
 
-                # 3. Heuristic homepage crawl + pagination
-                if len(article_links) < MAX_LINKS_PER_SITE:
-                    homepage_resp = await _fetch(client, base_url)
-                    if homepage_resp:
-                        html = homepage_resp.text
-                        
-                        # Find other languages folders
-                        lang_urls = _discover_language_folders(html, base_url)
-                        all_root_urls = {base_url} | lang_urls
-                        
-                        for root_url in all_root_urls:
-                            await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Til bo'limi qidirilmoqda: {root_url}")
-                            try:
-                                if root_url != base_url:
-                                    resp_l = await _fetch(client, root_url)
-                                    if resp_l:
-                                        page_links = await _discover_paginated(client, root_url, resp_l.text)
-                                        article_links |= page_links
-                                else:
-                                    page_links = await _discover_paginated(client, root_url, html)
-                                    article_links |= page_links
-                            except Exception as e:
-                                pass
+                for root_url in all_root_urls:
+                    await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Branch qidirilmoqda: {root_url}")
+                    
+                    # 1. RSS feeds
+                    rss_links = await _discover_via_rss(client, root_url)
+                    if rss_links:
+                        article_links |= rss_links
+                        await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[{root_url}] RSS: {len(rss_links)} ta maqola")
 
-                        await _add_event(
-                            db, job_id, university_id, ScrapeStage.DISCOVER,
-                            f"Heuristic crawl: jami {len(article_links)} ta maqola topildi"
-                        )
+                    # 2. Sitemap.xml
+                    if len(article_links) < MAX_LINKS_PER_SITE:
+                        sitemap_links = await _discover_via_sitemap(client, root_url)
+                        if sitemap_links:
+                            article_links |= sitemap_links
+                            await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[{root_url}] Sitemap: {len(sitemap_links)} ta maqola")
+
+                    # 3. Heuristic homepage crawl
+                    if len(article_links) < MAX_LINKS_PER_SITE:
+                        try:
+                            # If it's the base_url we already have homepage_resp.text, else fetch
+                            html = homepage_resp.text if root_url == base_url else (await _fetch(client, root_url)).text
+                            if html:
+                                page_links = await _discover_paginated(client, root_url, html)
+                                article_links |= page_links
+                                await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[{root_url}] Heuristic: {len(page_links)} ta maqola")
+                        except Exception as e:
+                            pass
+
+                await _add_event(
+                    db, job_id, university_id, ScrapeStage.DISCOVER,
+                    f"Heuristic crawl: jami {len(article_links)} ta maqola topildi"
+                )
 
                 # Limit total
                 article_links_list = list(article_links)[:MAX_LINKS_PER_SITE]

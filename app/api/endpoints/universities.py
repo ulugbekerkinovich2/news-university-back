@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, Query, HTTPException, File, UploadFile, Request
+import shutil
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_
 from sqlalchemy.orm import selectinload
@@ -145,3 +146,38 @@ async def get_regions(db: AsyncSession = Depends(get_db)):
         .distinct()
     )
     return sorted([r for (r,) in result.all() if r])
+
+
+@router.post("/{university_id}/logo", response_model=UniversityOut)
+async def upload_logo(
+    university_id: str,
+    request: Request,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db)
+):
+    # Verify university
+    result = await db.execute(select(University).where(University.id == university_id))
+    uni = result.scalar_one_or_none()
+    if not uni:
+        raise HTTPException(status_code=404, detail="University not found")
+
+    # Validate image file
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files are allowed")
+
+    ext = file.filename.split(".")[-1] if "." in file.filename else "png"
+    filename = f"{university_id}.{ext}"
+    filepath = f"static/logos/{filename}"
+
+    with open(filepath, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    # absolute URL wrapper
+    base = str(request.base_url).rstrip("/")
+    logo_url = f"{base}/static/logos/{filename}"
+    
+    uni.logo_url = logo_url
+    uni.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(uni)
+    return uni
