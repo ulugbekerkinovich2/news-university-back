@@ -43,13 +43,22 @@ REQUEST_TIMEOUT = 20            # seconds
 RETRY_COUNT = 3
 RETRY_BACKOFF = 2.0            # seconds (doubled each retry)
 
-# Patterns that signal a news/article URL
+# Patterns that signal a news/article URL on Uzbek university sites
+# Covers: /news/, /yangilik/, /xabar/, /maqola/, /press/, /blog/
+# Also: /<lang>/<section> style  like /oz/news/, /en/news/
+# And: date-based paths like /2023/01/, /2024/07/12/
 NEWS_URL_PATTERNS = re.compile(
     r"/(news|yangilik|xabar|article|post|blog|press|media|maqola|"
     r"announcement|event|publication|material|barchasi|all|"
-    r"latest|recent|novosti|stat|pressa)/",
+    r"latest|recent|novosti|stat|pressa|matbuot|axborot|"
+    r"mediamarkaz|media-markaz|nashrlar|tahrir)/"
+    r"|/(oz|uz|en|ru)/(news|yangilik|xabar|media|matbuot|article|blog)/"
+    r"|/\d{4}/\d{2}/",  # date-based paths e.g. /2024/03/
     re.IGNORECASE,
 )
+
+# More permissive: any internal link with slug-like structure longer than /x/y
+ARTICLE_PATH_MIN_DEPTH = 2   # at least /section/slug
 
 PAGINATION_PATTERNS = re.compile(
     r"[?&](page|p|offset|start)=\d+|/page/\d+",
@@ -59,11 +68,12 @@ PAGINATION_PATTERNS = re.compile(
 RSS_PATHS = [
     "/feed", "/rss", "/rss.xml", "/atom.xml", "/feed.xml",
     "/news/rss", "/news/feed", "/yangiliklar/rss",
+    "/feed/rss", "/feed/atom",
 ]
 
 SITEMAP_PATHS = [
     "/sitemap.xml", "/sitemap_news.xml", "/sitemap-news.xml",
-    "/news-sitemap.xml",
+    "/news-sitemap.xml", "/sitemap-index.xml",
 ]
 
 HEADERS = {
@@ -147,10 +157,20 @@ async def _discover_via_sitemap(client: httpx.AsyncClient, base_url: str) -> Set
 
 
 def _extract_links_from_page(html: str, base_url: str) -> Set[str]:
-    """Heuristic link extraction from HTML page."""
+    """Heuristic link extraction from HTML page.
+    First tries news-pattern matching, then falls back to depth-based heuristic."""
     soup = BeautifulSoup(html, "html.parser")
     base = urlparse(base_url)
-    links = set()
+    links: Set[str] = set()
+    fallback: Set[str] = set()
+
+    # Skip these common non-article paths
+    SKIP_PATHS = re.compile(
+        r"/(about|contact|login|register|search|tag|category|author|"
+        r"privacy|terms|cookies|sitemap|feed|rss|xml|pdf|wp-admin|"
+        r"static|assets|media/images|style|css|js|font|cdn)/",
+        re.IGNORECASE,
+    )
 
     for a in soup.find_all("a", href=True):
         href = a["href"].strip()
@@ -164,12 +184,23 @@ def _extract_links_from_page(html: str, base_url: str) -> Set[str]:
         if parsed.netloc and parsed.netloc != base.netloc:
             continue
 
-        # Must have news-like path
-        if NEWS_URL_PATTERNS.search(parsed.path):
-            # Avoid pure listing pages (keep articles with numeric IDs or slugs)
-            path_parts = [p for p in parsed.path.split("/") if p]
-            if len(path_parts) >= 2:
-                links.add(full.split("?")[0].split("#")[0])
+        clean = full.split("?")[0].split("#")[0]
+        path_parts = [p for p in parsed.path.split("/") if p]
+
+        # Must have news-like path — primary match
+        if NEWS_URL_PATTERNS.search(parsed.path) and len(path_parts) >= 2:
+            links.add(clean)
+
+        # Fallback: any deep internal link (depth >= 3) that isn't admin/static
+        elif len(path_parts) >= 3 and not SKIP_PATHS.search(parsed.path):
+            # Last segment looks like a slug (has letters, not just a number)
+            last = path_parts[-1]
+            if re.search(r"[a-zA-Z]", last) or len(last) > 5:
+                fallback.add(clean)
+
+    # Use fallback pool if primary found nothing
+    if not links and fallback:
+        links = set(list(fallback)[:MAX_LINKS_PER_SITE])
 
     return links
 
