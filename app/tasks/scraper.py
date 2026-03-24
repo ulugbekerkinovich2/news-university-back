@@ -156,6 +156,24 @@ async def _discover_via_sitemap(client: httpx.AsyncClient, base_url: str) -> Set
     return links
 
 
+def _discover_language_folders(html: str, base_url: str) -> Set[str]:
+    """Find links to other language versions of the homepage (e.g., /en, /ru, /oz)."""
+    soup = BeautifulSoup(html, "html.parser")
+    base = urlparse(base_url)
+    langs = {"/en", "/ru", "/uz", "/oz", "/en/", "/ru/", "/uz/", "/oz/"}
+    found = set()
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        full = urljoin(base_url, href)
+        parsed = urlparse(full)
+        if parsed.netloc and parsed.netloc != base.netloc:
+            continue
+        p = parsed.path.lower().rstrip("/")
+        if p in [l.rstrip("/") for l in langs]:
+            found.add(full)
+    return found
+
+
 def _extract_links_from_page(html: str, base_url: str) -> Set[str]:
     """Heuristic link extraction from HTML page.
     First tries news-pattern matching, then falls back to depth-based heuristic."""
@@ -338,6 +356,19 @@ def _extract_article(html: str, url: str) -> dict:
     language = _detect_language(content_text or title)
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower())[:120].strip("-")
 
+    # Plural images for gallery
+    images = []
+    for container_tag in ["article", "main", '[class*="content"]', '[class*="news"]']:
+        # bs4 select supports css classes
+        cont = soup.select_one(container_tag) if "[" in container_tag else soup.find(container_tag)
+        if cont:
+            for img in cont.find_all("img", src=True):
+                src = img["src"].strip()
+                if src and not src.startswith(("data:", "javascript:")):
+                    full_img = urljoin(url, src)
+                    if full_img not in images:
+                        images.append(full_img)
+
     return {
         "title": title[:500],
         "slug": slug or "article",
@@ -346,6 +377,7 @@ def _extract_article(html: str, url: str) -> dict:
         "published_at": published_at,
         "language": language,
         "og_image": og_image,
+        "images": images[:10],  # limit to 10
     }
 
 
@@ -419,6 +451,40 @@ async def _scrape_university_async(university_id: str, job_id: str):
                     f"Starting discovery on {base_url}"
                 )
 
+                # ── LOGO EXTRACTION ──────────────────────────────────────
+                if not getattr(uni, "logo_url", None):
+                    try:
+                        homepage_resp = await _fetch(client, base_url)
+                        if homepage_resp:
+                            soup = BeautifulSoup(homepage_resp.text, "html.parser")
+                            logo_found = None
+                            
+                            # 1. Try OG image (often high quality)
+                            og = soup.find("meta", property="og:image")
+                            if og and og.get("content"):
+                                logo_found = urljoin(base_url, og.get("content"))
+                            
+                            # 2. Try favicon link
+                            if not logo_found:
+                                fav = soup.find("link", rel=re.compile(r"icon", re.I))
+                                if fav and fav.get("href"):
+                                    logo_found = urljoin(base_url, fav.get("href"))
+                                    
+                            # Fallback: Google Favicon API (reliable)
+                            if not logo_found:
+                                logo_found = f"https://www.google.com/s2/favicons?domain={parsed_base.hostname}&sz=128"
+                                
+                            if logo_found:
+                                # We need to use a clean DB update since this runs in a thread
+                                await db.execute(
+                                    update(University).where(University.id == university_id)
+                                    .values(logo_url=logo_found)
+                                )
+                                await db.commit()
+                                await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Logo topildi va saqlandi: {logo_found}")
+                    except Exception as e:
+                        await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Logo xatosi: {str(e)}")
+
                 article_links: Set[str] = set()
 
                 # 1. RSS feeds (best quality)
@@ -445,11 +511,28 @@ async def _scrape_university_async(university_id: str, job_id: str):
                     homepage_resp = await _fetch(client, base_url)
                     if homepage_resp:
                         html = homepage_resp.text
-                        page_links = await _discover_paginated(client, base_url, html)
-                        article_links |= page_links
+                        
+                        # Find other languages folders
+                        lang_urls = _discover_language_folders(html, base_url)
+                        all_root_urls = {base_url} | lang_urls
+                        
+                        for root_url in all_root_urls:
+                            await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Til bo'limi qidirilmoqda: {root_url}")
+                            try:
+                                if root_url != base_url:
+                                    resp_l = await _fetch(client, root_url)
+                                    if resp_l:
+                                        page_links = await _discover_paginated(client, root_url, resp_l.text)
+                                        article_links |= page_links
+                                else:
+                                    page_links = await _discover_paginated(client, root_url, html)
+                                    article_links |= page_links
+                            except Exception as e:
+                                pass
+
                         await _add_event(
                             db, job_id, university_id, ScrapeStage.DISCOVER,
-                            f"Heuristic crawl: found {len(page_links)} article links"
+                            f"Heuristic crawl: jami {len(article_links)} ta maqola topildi"
                         )
 
                 # Limit total
@@ -523,6 +606,27 @@ async def _scrape_university_async(university_id: str, job_id: str):
                         )
                         db.add(post)
                         saved_count += 1
+
+                        # Save other images as MediaAsset
+                        for img_url in article.get("images", []):
+                            # Skip if it's identical to og_image (already saved)
+                            if article.get("og_image") and img_url == urljoin(url, article["og_image"]):
+                                continue
+                                
+                            existing_asset = await db.execute(
+                                select(MediaAsset).where(
+                                    (MediaAsset.original_url == img_url) & 
+                                    (MediaAsset.post_id == post.id)
+                                )
+                            )
+                            if not existing_asset.scalar_one_or_none():
+                                asset = MediaAsset(
+                                    id=str(uuid.uuid4()),
+                                    type=MediaType.image,
+                                    original_url=img_url,
+                                    post_id=post.id
+                                )
+                                db.add(asset)
 
                         # Commit every 5 posts
                         if saved_count % 5 == 0:
