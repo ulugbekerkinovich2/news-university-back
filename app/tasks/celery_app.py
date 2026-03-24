@@ -1,5 +1,6 @@
 import os
 from celery import Celery
+from celery.schedules import crontab
 
 # Filesystem broker — no external server required
 BROKER_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../celery_data"))
@@ -25,4 +26,13 @@ celery_app.conf.update(
     timezone="Asia/Tashkent",
     enable_utc=True,
     task_always_eager=False,
+    # ── Celery Beat: auto-scrape all universities every 6 hours ──
+    beat_schedule={
+        "scrape-all-universities-every-6h": {
+            "task": "tasks.scrape_all_universities",
+            "schedule": crontab(minute=0, hour="*/6"),
+        },
+    },
+    beat_scheduler="celery.beat:PersistentScheduler",
+    beat_schedule_filename="celery_data/celerybeat-schedule",
 )
