@@ -203,6 +203,16 @@ def _extract_links_from_page(html: str, base_url: str) -> Set[str]:
             continue
 
         clean = full.split("?")[0].split("#")[0]
+        
+        # Skip purely media or document files
+        if clean.lower().endswith((
+            '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx', 
+            '.zip', '.rar', '.tar', '.gz', '.7z',
+            '.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp', '.bmp', '.ico',
+            '.mp4', '.mp3', '.avi', '.mov', '.wmv', '.flv', '.wav'
+        )):
+            continue
+
         path_parts = [p for p in parsed.path.split("/") if p]
 
         # Must have news-like path — primary match
@@ -354,7 +364,13 @@ def _extract_article(html: str, url: str) -> dict:
 
     og_image = _extract_og_image(soup)
     language = _detect_language(content_text or title)
-    slug = re.sub(r"[^a-z0-9]+", "-", title.lower())[:120].strip("-")
+    
+    # Enforce slug uniqueness by appending URL hash
+    slug_base = re.sub(r"[^a-z0-9]+", "-", title.lower())[:100].strip("-")
+    if not slug_base:
+        slug_base = "article"
+    url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()[:8]
+    slug = f"{slug_base}-{url_hash}"
 
     # Plural images for gallery
     images = []
