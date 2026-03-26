@@ -8,7 +8,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-change-in-production-plea
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 hours
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt"], bcrypt__rounds=10, deprecated="auto")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

@@ -1,0 +1,1633 @@
+[
+  {
+    "id": 141,
+    "slug": "raqamli-iqtisodiyot-va-agrotexnologiyalar-universiteti",
+    "full_name_uz": "Raqamli iqtisodiyot va agrotexnologiyalar universiteti",
+    "full_name_ru": "Университет цифровой экономики и агротехнологий",
+    "full_name_en": "University of Digital Economy and Agrotechnologies"
+  },
+  {
+    "id": 169,
+    "slug": "belarus-milliy-texnik-universiteti-tdtu-qoshma-talim",
+    "full_name_uz": "Belarus Milliy Texnik Universiteti (TDTU qo'shma ta'lim)",
+    "full_name_ru": "Белорусский национальный технический университет",
+    "full_name_en": null
+  },
+  {
+    "id": 157,
+    "slug": "coventry-university-by-udea",
+    "full_name_uz": "Coventry University by UDEA",
+    "full_name_ru": "Coventry University by UDEA",
+    "full_name_en": "Coventry University by UDEA"
+  },
+  {
+    "id": 131,
+    "slug": "it-park-university",
+    "full_name_uz": "IT Park University",
+    "full_name_ru": "IT Park University",
+    "full_name_en": "IT Park University"
+  },
+  {
+    "id": 4,
+    "slug": "turkiston-yangi-innovatsiyalar-universiteti",
+    "full_name_uz": "Turkiston yangi innovatsiyalar universiteti",
+    "full_name_ru": "УНИВЕРСИТЕТ НОВЫХ ИННОВАЦИЙ",
+    "full_name_en": "Turkestan New Innovations University"
+  },
+  {
+    "id": 175,
+    "slug": "toshkent-shahrida-di-mendeleyev-nomidagi-rossiya-kimyo-texnologiya-universiteti-federal-davlat-budjeti-oliy-talim-muassasasi-filiali",
+    "full_name_uz": "Toshkent shahrida “D.I. Mendeleyev nomidagi rossiya kimyo-texnologiya universiteti” federal davlat budjeti oliy ta'lim muassasasi filiali",
+    "full_name_ru": "Филиал ФедеральнОого государственного бюджетного образовательного учреждения высшего образования «Российский химико-технологический университет имени Д.И. Менделеева» в городе тащкенте",
+    "full_name_en": "Branch of the Russia's Mendeleev University of Chemical Technology with federal state budget in Tashkent city."
+  },
+  {
+    "id": 173,
+    "slug": "chexiya-oliy-logistika-maktabi",
+    "full_name_uz": "Chexiya oliy logistika maktabi",
+    "full_name_ru": "Чешская высшая школа логистики",
+    "full_name_en": null
+  },
+  {
+    "id": 228,
+    "slug": "ozbekiston-koreya-xalqaro-universiteti",
+    "full_name_uz": "O'zbekiston Koreya xalqaro universiteti",
+    "full_name_ru": "Корейский международный университет Узбекистана",
+    "full_name_en": "Korea International University of Uzbekistan"
+  },
+  {
+    "id": 220,
+    "slug": "tashkent-perfect-university",
+    "full_name_uz": "Tashkent Perfect University",
+    "full_name_ru": "Tashkent Perfect University",
+    "full_name_en": "Tashkent Perfect University"
+  },
+  {
+    "id": 168,
+    "slug": "fan-va-texnologiyalar-universiteti",
+    "full_name_uz": "Fan va texnologiyalar universiteti",
+    "full_name_ru": "Университет науки и технологий",
+    "full_name_en": "University of Science and Technologies"
+  },
+  {
+    "id": 204,
+    "slug": "alfraganus-universiteti",
+    "full_name_uz": "Alfraganus universiteti",
+    "full_name_ru": "Университет Альфраганус",
+    "full_name_en": "Alfraganus University"
+  },
+  {
+    "id": 182,
+    "slug": "tashkent-international-university",
+    "full_name_uz": "Tashkent International University ",
+    "full_name_ru": "Ташкентский Международный Университет",
+    "full_name_en": "Tashkent International University."
+  },
+  {
+    "id": 229,
+    "slug": "latviyaning-axborot-tizimlari-menejmenti-oliy-maktabining-fargona-shahridagi-filiali",
+    "full_name_uz": "Latviyaning Аxborot tizimlari menejmenti Oliy maktabining Fargʼona shahridagi filiali",
+    "full_name_ru": "Филиал Высшей школы управления информационными системами Латвии в Фергане",
+    "full_name_en": "Branch of the Higher School of Information Systems Management of Latvia in Fergana"
+  },
+  {
+    "id": 166,
+    "slug": "farmatsevtika-talim-va-tadqiqot-instituti",
+    "full_name_uz": "Farmatsevtika ta'lim va tadqiqot instituti",
+    "full_name_ru": "Фармацевтический институт образования и исследований",
+    "full_name_en": "Pharmaceutical Education and Research Institute"
+  },
+  {
+    "id": 162,
+    "slug": "japan-digital-university",
+    "full_name_uz": "Japan Digital University",
+    "full_name_ru": "Japan Digital University",
+    "full_name_en": "Japan Digital University"
+  },
+  {
+    "id": 160,
+    "slug": "bucheon-university-in-tashkent",
+    "full_name_uz": "Bucheon University in Tashkent",
+    "full_name_ru": "Bucheon University in Tashkent",
+    "full_name_en": "Bucheon University in Tashkent"
+  },
+  {
+    "id": 167,
+    "slug": "xalqaro-tmc-instituti",
+    "full_name_uz": "Xalqaro TMC instituti",
+    "full_name_ru": "Международный Институт TMC в Ташкенте",
+    "full_name_en": "International TMC Institute"
+  },
+  {
+    "id": 234,
+    "slug": "university-of-wolverhampton",
+    "full_name_uz": "University of Wolverhampton",
+    "full_name_ru": "University of Wolverhampton",
+    "full_name_en": "University of Wolverhampton"
+  },
+  {
+    "id": 209,
+    "slug": "xalqaro-nordik-universiteti",
+    "full_name_uz": "Xalqaro Nordik universiteti",
+    "full_name_ru": "Международный Университет Нордик",
+    "full_name_en": "Nordic International University"
+  },
+  {
+    "id": 174,
+    "slug": "moskva-aviatsiya-instituti-tdtu-qoshma-talim",
+    "full_name_uz": "Moskva aviatsiya instituti (TDTU Qo'shma ta'lim)",
+    "full_name_ru": "Московский авиационный институт (Cовместное обучение)",
+    "full_name_en": null
+  },
+  {
+    "id": 177,
+    "slug": "xalqaro-qishloq-xojaligi-universiteti",
+    "full_name_uz": "Xalqaro qishloq xo‘jaligi universiteti",
+    "full_name_ru": "Xalqaro qishloq xo‘jaligi universiteti",
+    "full_name_en": "International University of Rural Development"
+  },
+  {
+    "id": 193,
+    "slug": "british-management-university",
+    "full_name_uz": "British Management University",
+    "full_name_ru": "British Management University",
+    "full_name_en": "British Management University"
+  },
+  {
+    "id": 146,
+    "slug": "westminster-international-university-in-tashkent",
+    "full_name_uz": "Westminster International University in Tashkent",
+    "full_name_ru": "Вестминстерский международный университет в Ташкенте",
+    "full_name_en": "Westminster International University in Tashkent"
+  },
+  {
+    "id": 154,
+    "slug": "toshkent-shahridagi-turin-politexnika-universiteti",
+    "full_name_uz": "Toshkent shahridagi Turin politexnika universiteti",
+    "full_name_ru": "Туринский политехнический университет в городе Ташкенте",
+    "full_name_en": "Turin Polytechnic University in Tashkent"
+  },
+  {
+    "id": 14,
+    "slug": "iqtisodiyot-va-pedagogika-universiteti",
+    "full_name_uz": "Iqtisodiyot va pedagogika universiteti",
+    "full_name_ru": "Университет экономики и педагогики",
+    "full_name_en": "Economics and pedagogy university"
+  },
+  {
+    "id": 188,
+    "slug": "international-school-of-finance-technology-and-science",
+    "full_name_uz": "International School of Finance Technology and Science",
+    "full_name_ru": "International School of Finance Technology and Science",
+    "full_name_en": "International School of Finance Technology and Science"
+  },
+  {
+    "id": 185,
+    "slug": "acharya-universiteti",
+    "full_name_uz": "Acharya Universiteti",
+    "full_name_ru": "Университет Ачарья",
+    "full_name_en": "Acharya University"
+  },
+  {
+    "id": 136,
+    "slug": "team-university",
+    "full_name_uz": "TEAM University",
+    "full_name_ru": "TEAM University",
+    "full_name_en": "TEAM University"
+  },
+  {
+    "id": 12,
+    "slug": "oriental-universiteti",
+    "full_name_uz": "Oriental universiteti",
+    "full_name_ru": "Oriental University",
+    "full_name_en": "Oriental University"
+  },
+  {
+    "id": 156,
+    "slug": "samarqand-xalqaro-texnologiya-universiteti",
+    "full_name_uz": "Samarqand xalqaro texnologiya universiteti",
+    "full_name_ru": "Самаркандский международный технологический университет ",
+    "full_name_en": "Samarqand International University of Information Technologies."
+  },
+  {
+    "id": 16,
+    "slug": "toshkent-amaliy-fanlar-universiteti",
+    "full_name_uz": "Toshkent Amaliy Fanlar Universiteti",
+    "full_name_ru": "Ташкентский университет прикладных наук",
+    "full_name_en": "Tashkent State Technical University"
+  },
+  {
+    "id": 134,
+    "slug": "xalqaro-innovatsion-universiteti",
+    "full_name_uz": "Xalqaro innovatsion universiteti",
+    "full_name_ru": "Международный инновационный университет",
+    "full_name_en": "International Innovation University"
+  },
+  {
+    "id": 17,
+    "slug": "university-of-management-and-future-technologies",
+    "full_name_uz": " University of Management and Future Technologies",
+    "full_name_ru": " University of Management and Future Technologies",
+    "full_name_en": "University of Management and Future Technologies"
+  },
+  {
+    "id": 142,
+    "slug": "toshkent-shahridagi-amity-universiteti",
+    "full_name_uz": "Toshkent shahridagi Amity Universiteti",
+    "full_name_ru": "Университет Амити в городе Ташкент",
+    "full_name_en": "Amity University in the city of Tashkent."
+  },
+  {
+    "id": 217,
+    "slug": "yangi-ozbekiston-universiteti",
+    "full_name_uz": "Yangi O'zbekiston universiteti ",
+    "full_name_ru": "Новый университет Узбекистана",
+    "full_name_en": "New Uzbekistan University"
+  },
+  {
+    "id": 231,
+    "slug": "aniq-va-ijtimoiy-fanlar-universitetichirchiq-binosi",
+    "full_name_uz": "Aniq va ijtimoiy fanlar universiteti(Chirchiq binosi)",
+    "full_name_ru": "Университет точных и социальных наук(Чирчик здание)",
+    "full_name_en": "University of Exact and Social Sciences(Chirchik building)"
+  },
+  {
+    "id": 144,
+    "slug": "profi-university",
+    "full_name_uz": "Profi University",
+    "full_name_ru": "Profi University",
+    "full_name_en": "Profi University"
+  },
+  {
+    "id": 176,
+    "slug": "qoqon-universiteti",
+    "full_name_uz": "Qo'qon universiteti",
+    "full_name_ru": "Кокандский университет",
+    "full_name_en": "Kokand University"
+  },
+  {
+    "id": 1,
+    "slug": "toshkent-ijtimoiy-innovatsiya-universiteti",
+    "full_name_uz": "Toshkent ijtimoiy innovatsiya universiteti",
+    "full_name_ru": "Ташкентский университет социальных инноваций",
+    "full_name_en": "Tashkent University of Social Innovation"
+  },
+  {
+    "id": 164,
+    "slug": "international-digital-university",
+    "full_name_uz": " International Digital University",
+    "full_name_ru": " International Digital University",
+    "full_name_en": "International Digital University."
+  },
+  {
+    "id": 149,
+    "slug": "qarshi-xalqaro-universiteti",
+    "full_name_uz": "Qarshi Xalqaro Universiteti",
+    "full_name_ru": "Каршинский международный университет",
+    "full_name_en": "Qarshi International University"
+  },
+  {
+    "id": 158,
+    "slug": "renessans-talim-universiteti",
+    "full_name_uz": "Renessans Ta'lim Universiteti",
+    "full_name_ru": "Университет образования Ренессанс",
+    "full_name_en": "Renaissance Educational University"
+  },
+  {
+    "id": 150,
+    "slug": "pdp-university",
+    "full_name_uz": "PDP University",
+    "full_name_ru": "PDP University",
+    "full_name_en": "PDP University"
+  },
+  {
+    "id": 151,
+    "slug": "xalqaro-binary-universiteti",
+    "full_name_uz": "Xalqaro Binary Universiteti",
+    "full_name_ru": "Международный Бинарный Университет",
+    "full_name_en": "International Binary University"
+  },
+  {
+    "id": 145,
+    "slug": "namangan-xalqaro-universiteti",
+    "full_name_uz": "Namangan Xalqaro Universiteti",
+    "full_name_ru": "Наманганский Международный Университет",
+    "full_name_en": null
+  },
+  {
+    "id": 230,
+    "slug": "sambhram-university-in-jizzax",
+    "full_name_uz": "Sambhram University in Jizzax",
+    "full_name_ru": "Университет Самбрам в Джизаке",
+    "full_name_en": "Sambhram University in Jizzax"
+  },
+  {
+    "id": 153,
+    "slug": "toshkent-shahridagi-adju-universiteti",
+    "full_name_uz": "Toshkent shahridagi Adju universiteti",
+    "full_name_ru": "Университет Аджу в городе Ташкент",
+    "full_name_en": "Adju University in the city of Tashkent."
+  },
+  {
+    "id": 161,
+    "slug": "stars-international-university",
+    "full_name_uz": "STARS International University",
+    "full_name_ru": "STARS International University",
+    "full_name_en": "STARS International University"
+  },
+  {
+    "id": 233,
+    "slug": "toshkentdagi-amerika-texnologiya-universiteti",
+    "full_name_uz": "Toshkentdagi Amerika Texnologiya Universiteti",
+    "full_name_ru": "Американский технологический университет в Ташкенте",
+    "full_name_en": "American University of Technology in Tashkent"
+  },
+  {
+    "id": 238,
+    "slug": "university-of-business-and-science-namangan-filiali",
+    "full_name_uz": "University of Business and Science - Namangan filiali",
+    "full_name_ru": "University of Business and Science - Наманганский филиал",
+    "full_name_en": "University of Business and Science - Namangan branch"
+  },
+  {
+    "id": 137,
+    "slug": "aniq-va-ijtimoiy-fanlar-universiteti",
+    "full_name_uz": "Aniq va ijtimoiy fanlar universiteti",
+    "full_name_ru": "Университет точных и социальных наук",
+    "full_name_en": "University of Exact and Social Sciences"
+  },
+  {
+    "id": 2,
+    "slug": "inha-university-in-tashkent",
+    "full_name_uz": "Inha University in Tashkent",
+    "full_name_ru": "Inha University in Tashkent",
+    "full_name_en": "Inha University in Tashkent"
+  },
+  {
+    "id": 178,
+    "slug": "toshkent-iqtisodiyot-va-texnologiyalari-universiteti",
+    "full_name_uz": "Toshkent iqtisodiyot va texnologiyalari universiteti",
+    "full_name_ru": "Ташкентский университет экономики и технологий",
+    "full_name_en": "Tashkent University of Economics and Technology"
+  },
+  {
+    "id": 11,
+    "slug": "toshkent-menejment-va-iqtisodiyot-instituti",
+    "full_name_uz": " Toshkent menejment va iqtisodiyot instituti",
+    "full_name_ru": "Ташкентский институт менеджмента и экономики",
+    "full_name_en": "Tashkent Management and Economics Institute"
+  },
+  {
+    "id": 181,
+    "slug": "buxoro-innovatsiyalar-universiteti",
+    "full_name_uz": "Buxoro innovatsiyalar universiteti",
+    "full_name_ru": "Бухарский  университет инноваций",
+    "full_name_en": "Bukhara Innovation University"
+  },
+  {
+    "id": 223,
+    "slug": "sharda-university-uzbekistan",
+    "full_name_uz": "Sharda University Uzbekistan",
+    "full_name_ru": "Sharda University Uzbekistan",
+    "full_name_en": "Sharda University Uzbekistan"
+  },
+  {
+    "id": 225,
+    "slug": "zarmed-universiteti-buxoro-kampus",
+    "full_name_uz": "ZARMED universiteti Buxoro kampus",
+    "full_name_ru": "Бухарский кампус университета ЗАРМЕД",
+    "full_name_en": "ZARMED University Bukhara Campus"
+  },
+  {
+    "id": 132,
+    "slug": "central-asian-university",
+    "full_name_uz": "Central Asian University",
+    "full_name_ru": "Central Asian University",
+    "full_name_en": "Central Asian University."
+  },
+  {
+    "id": 241,
+    "slug": "impuls-tibbiyot-instituti-chirchiq-kampusi",
+    "full_name_uz": "IMPULS tibbiyot instituti (Chirchiq kampusi)",
+    "full_name_ru": "Медицинский институт IMPULS (кампус в Чирчике)",
+    "full_name_en": "IMPULS Medical Institute (Chirchiq Campus)"
+  },
+  {
+    "id": 148,
+    "slug": "toshkent-shahridagi-singapur-menejmentni-rivojlantirish-instituti",
+    "full_name_uz": "Toshkent shahridagi Singapur menejmentni rivojlantirish instituti",
+    "full_name_ru": "Сингапурский институт развития менеджмента в Ташкенте",
+    "full_name_en": "Management Development Institute of Singapore in Tashkent"
+  },
+  {
+    "id": 224,
+    "slug": "collegium-humanum-varshava-menejment-universiteti",
+    "full_name_uz": "Collegium Humanum Varshava menejment Universiteti ",
+    "full_name_ru": "Collegium Humanum Варшавский университет менеджмента",
+    "full_name_en": "Collegium Humanum Warsaw University of Management"
+  },
+  {
+    "id": 240,
+    "slug": "imom-buxoriy-nomidagi-toshkent-islom-instituti",
+    "full_name_uz": "Imom Buxoriy nomidagi Toshkent islom instituti",
+    "full_name_ru": "Ташкентский исламский институт имени Имама аль-Бухари",
+    "full_name_en": "Tashkent Islamic Institute named after Imam al-Bukhari"
+  },
+  {
+    "id": 159,
+    "slug": "webster-university",
+    "full_name_uz": "Webster University",
+    "full_name_ru": "Webster University",
+    "full_name_en": "Webster University is a private university located in St. Louis, Missouri, United States."
+  },
+  {
+    "id": 237,
+    "slug": "sharq-universiteti",
+    "full_name_uz": "SHARQ UNIVERSITETI",
+    "full_name_ru": "УНИВЕРСИТЕТ ШАРК",
+    "full_name_en": "SHARQ UNIVERSITY"
+  },
+  {
+    "id": 163,
+    "slug": "yangi-asr-universiteti",
+    "full_name_uz": "Yangi Asr Universiteti",
+    "full_name_ru": "Yangi Asr Universiteti",
+    "full_name_en": "Yangi Asr University"
+  },
+  {
+    "id": 236,
+    "slug": "zarmed-universiteti-samarqand-kampusi",
+    "full_name_uz": "ZARMED universiteti Samarqand kampusi",
+    "full_name_ru": "Самаркандский кампус Университета ЗАРМЕД",
+    "full_name_en": "ZARMED University Samarkand Campus"
+  },
+  {
+    "id": 10,
+    "slug": "toshkent-xalqaro-moliyaviy-boshqaruv-va-texnologiyalar-universiteti",
+    "full_name_uz": "Toshkent xalqaro moliyaviy boshqaruv va texnologiyalar universiteti",
+    "full_name_ru": "Ташкентский международный университет финансового менеджмента и технологий",
+    "full_name_en": "Tashkent International University of Finance and Technology"
+  },
+  {
+    "id": 221,
+    "slug": "tashkent-international-university-of-education",
+    "full_name_uz": "Tashkent International University of Education",
+    "full_name_ru": "Tashkent International University of Education",
+    "full_name_en": "Tashkent International University of Education"
+  },
+  {
+    "id": 208,
+    "slug": "millat-umidi-university",
+    "full_name_uz": "Millat Umidi University",
+    "full_name_ru": "Университет Миллат Умиди",
+    "full_name_en": "Millat Umidi University"
+  },
+  {
+    "id": 218,
+    "slug": "emu-universiteti",
+    "full_name_uz": "EMU universiteti",
+    "full_name_ru": "ЭМУ Университет",
+    "full_name_en": "EMU University"
+  },
+  {
+    "id": 147,
+    "slug": "axborot-texnologiyalari-va-menejment-universiteti",
+    "full_name_uz": "Axborot texnologiyalari va menejment universiteti",
+    "full_name_ru": "Университет информационных технологий и менеджмента",
+    "full_name_en": "The University of Information Technology and Management"
+  },
+  {
+    "id": 135,
+    "slug": "navoiy-innovatsiyalar-universiteti",
+    "full_name_uz": "Navoiy innovatsiyalar universiteti",
+    "full_name_ru": "Навоийский инновационный университет",
+    "full_name_en": "Navoi Innovation University"
+  },
+  {
+    "id": 207,
+    "slug": "oxus-universiteti",
+    "full_name_uz": "OXUS UNIVERSITETI",
+    "full_name_ru": "УНИВЕРСИТЕТ OXUS",
+    "full_name_en": "OXUS UNIVERSITY"
+  },
+  {
+    "id": 222,
+    "slug": "tashkent-metropolitan-university",
+    "full_name_uz": "Tashkent Metropolitan University",
+    "full_name_ru": "Tashkent Metropolitan University",
+    "full_name_en": "Tashkent Metropolitan University"
+  },
+  {
+    "id": 21,
+    "slug": "andijon-davlat-universitetining-pedagogika-instituti",
+    "full_name_uz": "Andijon davlat universitetining Pedagogika instituti",
+    "full_name_ru": "Педагогический институт Андижанского государственного университета",
+    "full_name_en": "Andijan State University's Pedagogical Institute."
+  },
+  {
+    "id": 235,
+    "slug": "osiyo-texnologiyalar-universiteti",
+    "full_name_uz": "Osiyo Texnologiyalar Universiteti",
+    "full_name_ru": "Азиатский Технологический Университет",
+    "full_name_en": "Asian Technology University"
+  },
+  {
+    "id": 203,
+    "slug": "toshkent-shahridagi-turkiyaning-iqtisodiyot-va-texnologiyalar-universiteti",
+    "full_name_uz": "Toshkent shahridagi Turkiyaning Iqtisodiyot va Texnologiyalar Universiteti",
+    "full_name_ru": "Турецкий университет экономики и технологий  г. Ташкенте",
+    "full_name_en": "TOBB University of Economics and Technology in Tashkent"
+  },
+  {
+    "id": 3,
+    "slug": "osiyo-xalqaro-universiteti",
+    "full_name_uz": "Osiyo Xalqaro Universiteti",
+    "full_name_ru": "Азиатский международный университет",
+    "full_name_en": "Osiyo International University"
+  },
+  {
+    "id": 165,
+    "slug": "turon-universiteti",
+    "full_name_uz": "Turon Universiteti",
+    "full_name_ru": "Университет Турон",
+    "full_name_en": "Turan University"
+  },
+  {
+    "id": 242,
+    "slug": "mehnat-va-ijtimoiy-munosabatlar-akademiyasi",
+    "full_name_uz": "Mehnat va ijtimoiy munosabatlar akademiyasi",
+    "full_name_ru": "Академия труда и социальных отношений",
+    "full_name_en": "Academy of Labor and Social Relations"
+  },
+  {
+    "id": 139,
+    "slug": "diplomat-university",
+    "full_name_uz": "Diplomat University ",
+    "full_name_ru": "Университет Дипломат",
+    "full_name_en": "Diplomat University "
+  },
+  {
+    "id": 215,
+    "slug": "toshkent-kasb-hunar-va-tibbiyot-texnikumi",
+    "full_name_uz": "Toshkent kasb hunar va tibbiyot texnikumi",
+    "full_name_ru": "Toshkent kasb-hunar va tibbiyot texnikumi",
+    "full_name_en": "Toshkent kasb-hunar va tibbiyot texnikumi"
+  },
+  {
+    "id": 180,
+    "slug": "renaissance-university",
+    "full_name_uz": "Renaissance University",
+    "full_name_ru": "Renaissance University",
+    "full_name_en": "Renaissance University."
+  },
+  {
+    "id": 140,
+    "slug": "valley-innovative-university",
+    "full_name_uz": "Valley Innovative University ",
+    "full_name_ru": "Инновационный университет долины",
+    "full_name_en": "Valley Innovative University"
+  },
+  {
+    "id": 198,
+    "slug": "urganch-davlat-pedagogika-instituti",
+    "full_name_uz": "Urganch davlat pedagogika instituti",
+    "full_name_ru": "Urganch davlat pedagogika instituti",
+    "full_name_en": "Urganch davlat pedagogika instituti"
+  },
+  {
+    "id": 138,
+    "slug": "buxoro-innovatsion-tibbiyot-instituti",
+    "full_name_uz": "Buxoro innovatsion tibbiyot instituti",
+    "full_name_ru": "Бухарский институт инновационной медицины",
+    "full_name_en": "Bukhara Innovation Medical Institute"
+  },
+  {
+    "id": 212,
+    "slug": "registon-tibbiyot-texnikumi",
+    "full_name_uz": "Registon tibbiyot texnikumi",
+    "full_name_ru": "Mедицинский техникум Регистан",
+    "full_name_en": "Registan Medical College "
+  },
+  {
+    "id": 202,
+    "slug": "ijtimoiy-va-siyosiy-fanlar-instituti",
+    "full_name_uz": "Ijtimoiy va siyosiy fanlar instituti",
+    "full_name_ru": "Институт социальных и политических наук",
+    "full_name_en": "Instituti of social and political sciences"
+  },
+  {
+    "id": 171,
+    "slug": "belarus-davlat-aviatsiya-akademiyasi-tdtu-qoshma-talim",
+    "full_name_uz": "Belarus davlat aviatsiya akademiyasi (TDTU qo'shma ta'lim)",
+    "full_name_ru": "Белорусская государственная авиационная академия",
+    "full_name_en": null
+  },
+  {
+    "id": 214,
+    "slug": "alpha-professional-talim-tibbiyot-texnikumi",
+    "full_name_uz": "Alpha professional ta’lim tibbiyot texnikumi",
+    "full_name_ru": "Альфа профессиональное образование медицинский техникум",
+    "full_name_en": "Alpha professional education medical technical college"
+  },
+  {
+    "id": 191,
+    "slug": "toshkent-kimyo-xalqaro-universiteti",
+    "full_name_uz": "Toshkent Kimyo xalqaro universiteti",
+    "full_name_ru": "Ташкентский международный университет Кимё",
+    "full_name_en": "Tashkent Kimyo international university"
+  },
+  {
+    "id": 205,
+    "slug": "ipak-yoli-innovatsiyalar-universiteti",
+    "full_name_uz": "Ipak yo‘li innovatsiyalar universiteti ",
+    "full_name_ru": "Инновационный университет Шелкового пути",
+    "full_name_en": "Silk Road Innovation University"
+  },
+  {
+    "id": 219,
+    "slug": "sino-tibbiyot-texnikumi",
+    "full_name_uz": "Sino tibbiyot texnikumi",
+    "full_name_ru": "Сино медицинский техникум",
+    "full_name_en": "Sino Medical College"
+  },
+  {
+    "id": 213,
+    "slug": "avitsenna-tibbiyot-texnikumi",
+    "full_name_uz": "Avitsenna tibbiyot texnikumi",
+    "full_name_ru": "Медицинский колледж Авиценны",
+    "full_name_en": "Avicenna medical college"
+  },
+  {
+    "id": 13,
+    "slug": "university-of-business-and-science-toshkent-filiali",
+    "full_name_uz": "University of Business and Science - Toshkent filiali",
+    "full_name_ru": "University of Business and Science - Ташкентский филиал",
+    "full_name_en": "53 / 1000  University of Business and Science - Tashkent branch"
+  },
+  {
+    "id": 245,
+    "slug": "sarbon-universiteti",
+    "full_name_uz": "Sarbon universiteti",
+    "full_name_ru": "Университет «Sarbon»",
+    "full_name_en": "Sarbon University"
+  },
+  {
+    "id": 244,
+    "slug": "qoqon-universiteti-andijon-filiali",
+    "full_name_uz": "Qo‘qon universiteti Andijon filiali",
+    "full_name_ru": "Андижанский филиал Кокандского университета",
+    "full_name_en": "Andijan Branch of Kokand University"
+  },
+  {
+    "id": 247,
+    "slug": "toshkent-iqtisodiyot-va-pedagogika-universiteti",
+    "full_name_uz": "Toshkent iqtisodiyot va pedagogika universiteti",
+    "full_name_ru": "Ташкентский университет экономики и педагогики",
+    "full_name_en": "Tashkent University of Economics and Pedagogy"
+  },
+  {
+    "id": 226,
+    "slug": "buxoro-xalqaro-universiteti",
+    "full_name_uz": "Buxoro Xalqaro Universiteti",
+    "full_name_ru": "Бухарский международный университет",
+    "full_name_en": "Bukhara International University"
+  },
+  {
+    "id": 18,
+    "slug": "andijon-davlat-chet-tillari-instituti",
+    "full_name_uz": "Andijon davlat chet tillari instituti",
+    "full_name_ru": "Андижанский государственный институт иностранных языков",
+    "full_name_en": "Andijan State Institute of Foreign Languages"
+  },
+  {
+    "id": 200,
+    "slug": "namangan-toqimachilik-sanoati-instituti",
+    "full_name_uz": "Namangan to‘qimachilik sanoati instituti",
+    "full_name_ru": "Namangan to‘qimachilik sanoati instituti",
+    "full_name_en": "Namangan to‘qimachilik sanoati instituti"
+  },
+  {
+    "id": 216,
+    "slug": "toshkent-gumanitar-fanlar-universiteti",
+    "full_name_uz": "Toshkent gumanitar fanlar universiteti",
+    "full_name_ru": "Ташкентский университет гуманитарных наук",
+    "full_name_en": "Tashkent University of Human Sciences "
+  },
+  {
+    "id": 19,
+    "slug": "andijon-davlat-tibbiyot-instituti",
+    "full_name_uz": "Andijon davlat tibbiyot instituti",
+    "full_name_ru": "Андижанский государственный медицинский институт",
+    "full_name_en": "Andijan State Medical Institute"
+  },
+  {
+    "id": 210,
+    "slug": "impuls-tibbiyot-instituti-namangan-filiali",
+    "full_name_uz": "Impuls Tibbiyot Instituti - Namangan filiali",
+    "full_name_ru": "Медицинский институт Импульс - Наманганский филиал",
+    "full_name_en": "Impuls Medical Institute - Namangan Branch"
+  },
+  {
+    "id": 102,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti-samarqand-filiali",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti Samarqand filiali",
+    "full_name_ru": "Самаркандский филиал Ташкентского университета информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies, Samarqand Branch"
+  },
+  {
+    "id": 101,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti-qarshi-filiali",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti Qarshi filiali",
+    "full_name_ru": "Каршинский филиал Ташкентского университета информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies Qarshi Branch"
+  },
+  {
+    "id": 79,
+    "slug": "samarqand-davlat-chet-tillar-instituti-narpay-xorijiy-tillar-fakulteti",
+    "full_name_uz": "Samarqand davlat chet tillar instituti Narpay “Xorijiy tillar” fakulteti",
+    "full_name_ru": "Самаркандский государственный институт иностранных языков, Нарпайский факультет \"Иностранных языков\"",
+    "full_name_en": "State Institute of Foreign Languages in Samarqand"
+  },
+  {
+    "id": 39,
+    "slug": "jizzax-davlat-pedagogika-instituti",
+    "full_name_uz": "Jizzax davlat pedagogika instituti",
+    "full_name_ru": "Джизакский государственный педагогический институт",
+    "full_name_en": "Jizzakh State Pedagogical Institute"
+  },
+  {
+    "id": 85,
+    "slug": "samarqand-davlat-universitetining-denov-tadbirkorlik-va-pedagogika-instituti",
+    "full_name_uz": "Samarqand davlat universitetining Denov tadbirkorlik va pedagogika instituti",
+    "full_name_ru": "Денов Институт предпринимательства и педагогики Самаркандского государственного университета",
+    "full_name_en": "Denov Entrepreneurship and Pedagogy Institute of Samarkand State University"
+  },
+  {
+    "id": 60,
+    "slug": "ozbekiston-davlat-sanat-va-madaniyat-instituti",
+    "full_name_uz": "O‘zbekiston davlat san‘at va madaniyat instituti",
+    "full_name_ru": "Государственный институт искусства и культуры Узбекистана",
+    "full_name_en": "Uzbekistan State Institute of Arts and Culture"
+  },
+  {
+    "id": 36,
+    "slug": "islom-karimov-nomidagi-toshkent-davlat-texnika-universiteti-qoqon-filiali",
+    "full_name_uz": "Islom Karimov nomidagi Toshkent davlat texnika universiteti Qoʻqon filiali",
+    "full_name_ru": "Ташкентский государственный технический университет имени Ислама Каримова, Коканский филиал",
+    "full_name_en": "Tashkent State Technical University, Qoʻqon branch, named after Islom Karimov."
+  },
+  {
+    "id": 78,
+    "slug": "samarqand-davlat-chet-tillar-instituti",
+    "full_name_uz": "Samarqand davlat chet tillar instituti",
+    "full_name_ru": "Самаркандский государственный институт иностранных языков",
+    "full_name_en": "Samarqand State Institute of Foreign Languages"
+  },
+  {
+    "id": 84,
+    "slug": "samarqand-davlat-universitetining-agrobiotexnologiyalar-va-oziq-ovqat-xavfsizligi-instituti",
+    "full_name_uz": "Samarqand davlat universitetining Agrobiotexnologiyalar va oziq-ovqat xavfsizligi instituti",
+    "full_name_ru": "Институт агробиотехнологий и безопасности пищевых продуктов Самаркандского государственного университета",
+    "full_name_en": "Institute of Agrobiotechnology and Food Safety at Samarqand State University."
+  },
+  {
+    "id": 53,
+    "slug": "ozbek-milliy-musiqa-sanati-instituti",
+    "full_name_uz": "O‘zbek milliy musiqa sanʼati instituti",
+    "full_name_ru": "Узбекский национальный институт музыкального искусства",
+    "full_name_en": "Uzbek National Conservatory"
+  },
+  {
+    "id": 29,
+    "slug": "buxoro-tabiiy-resurslarni-boshqarish-instituti",
+    "full_name_uz": "Buxoro tabiiy resurslarni boshqarish instituti",
+    "full_name_ru": "Бухарский институт природопользования",
+    "full_name_en": "Bukhara Natural Resources Management Institute"
+  },
+  {
+    "id": 31,
+    "slug": "fargona-jamoat-salomatligi-tibbiyot-instituti",
+    "full_name_uz": "Farg‘ona jamoat salomatligi tibbiyot instituti",
+    "full_name_ru": "Ферганский медицинский институт общественного здравоохранения",
+    "full_name_en": "Fergana Institute of Public Health"
+  },
+  {
+    "id": 24,
+    "slug": "andijon-qishloq-xojaligi-va-agrotexnologiyalar-instituti",
+    "full_name_uz": "Andijon qishloq xo‘jaligi va agrotexnologiyalar instituti",
+    "full_name_ru": "Андижанский институт сельского хозяйства и агротехнологий",
+    "full_name_en": "Andijan Agricultural and Agrotechnological Institute."
+  },
+  {
+    "id": 25,
+    "slug": "buxoro-davlat-tibbiyot-universiteti",
+    "full_name_uz": "Buxoro davlat tibbiyot universiteti",
+    "full_name_ru": "Бухарский государственный медицинский институт",
+    "full_name_en": "Bukhara State Medical University"
+  },
+  {
+    "id": 23,
+    "slug": "andijon-mashinasozlik-instituti",
+    "full_name_uz": "Andijon mashinasozlik instituti",
+    "full_name_ru": "Андижанский институт машиностроения",
+    "full_name_en": "Andijan Machine-building Institute"
+  },
+  {
+    "id": 51,
+    "slug": "nukus-konchilik-instituti",
+    "full_name_uz": "Nukus konchilik instituti",
+    "full_name_ru": "Нукусский горный институт",
+    "full_name_en": "Nukus Vocational Institute"
+  },
+  {
+    "id": 68,
+    "slug": "qarshi-davlat-universiteti",
+    "full_name_uz": "Qarshi davlat universiteti",
+    "full_name_ru": "Каршинский государственный университет",
+    "full_name_en": "Qarshi State University"
+  },
+  {
+    "id": 40,
+    "slug": "jizzax-politexnika-instituti",
+    "full_name_uz": "Jizzax politexnika instituti",
+    "full_name_ru": "Джизакский политехнический институт",
+    "full_name_en": "Jizzakh Polytechnic Institute"
+  },
+  {
+    "id": 27,
+    "slug": "buxoro-davlat-universitetining-pedagogika-instituti",
+    "full_name_uz": "Buxoro davlat universitetining Pedagogika instituti",
+    "full_name_ru": "Педагогический институт Бухарского государственного университета",
+    "full_name_en": "Institute of Pedagogy of Bukhara State University"
+  },
+  {
+    "id": 41,
+    "slug": "milliy-estrada-sanati-instituti",
+    "full_name_uz": "Milliy estrada san‘ati instituti",
+    "full_name_ru": "Национальный институт исполнительских искусств",
+    "full_name_en": "National Institute of Folk Music Education"
+  },
+  {
+    "id": 184,
+    "slug": "toshkent-davlat-transport-universiteti-qoshma-talim-dasturlari",
+    "full_name_uz": "Toshkent Davlat Transport Universiteti (Qo'shma Ta'lim Dasturlari)",
+    "full_name_ru": "Toshkent Davlat Transport Universiteti (Совместные Образовательные Программы)",
+    "full_name_en": "Tashkent State Transport University (Joint Educational Programs)"
+  },
+  {
+    "id": 201,
+    "slug": "ozbekiston-respublikasi-huquqni-muhofaza-qilish-akademiyasi",
+    "full_name_uz": "O‘zbekiston Respublikasi Huquqni muhofaza qilish akademiyasi",
+    "full_name_ru": "O‘zbekiston Respublikasi Huquqni muhofaza qilish akademiyasi",
+    "full_name_en": "O‘zbekiston Respublikasi Huquqni muhofaza qilish akademiyasi"
+  },
+  {
+    "id": 73,
+    "slug": "qoraqalpogiston-tibbiyot-instituti",
+    "full_name_uz": "Qoraqalpog‘iston tibbiyot instituti",
+    "full_name_ru": "Каракалпакский медицинский институт",
+    "full_name_en": "Karakalpak State Medical Institute"
+  },
+  {
+    "id": 92,
+    "slug": "termiz-agrotexnologiyalar-va-innovatsion-rivojlanish-instituti",
+    "full_name_uz": "Termiz agrotexnologiyalar va innovatsion rivojlanish instituti",
+    "full_name_ru": "Термезский институт агротехнологий и инновационного развития",
+    "full_name_en": "Termiz Agrotechnologies and Innovation Development Institute"
+  },
+  {
+    "id": 65,
+    "slug": "ozbekiston-respublikasi-davlat-soliq-qomitasi-huzuridagi-fiskal-institut",
+    "full_name_uz": "O‘zbekiston Respublikasi Davlat soliq qo‘mitasi huzuridagi Fiskal institut",
+    "full_name_ru": "Налоговый институт при Государственном налоговом комитете Республики Узбекистан",
+    "full_name_en": "Fiscal Institute under the State Tax Committee of the Republic of Uzbekistan"
+  },
+  {
+    "id": 112,
+    "slug": "toshkent-davlat-stomatologiya-instituti",
+    "full_name_uz": "Toshkent davlat stomatologiya instituti",
+    "full_name_ru": "Ташкентский государственный стоматологический институт",
+    "full_name_en": "Tashkent State Dental Institute."
+  },
+  {
+    "id": 96,
+    "slug": "toshkent-arxitektura-qurilish-universiteti",
+    "full_name_uz": "Toshkent arxitektura-qurilish universiteti",
+    "full_name_ru": "Ташкентский университет архитектуры и строительства",
+    "full_name_en": "Tashkent University of Architecture and Civil Engineering"
+  },
+  {
+    "id": 89,
+    "slug": "samarqand-veterinariya-meditsinasi-chorvachilik-va-biotexnologiyalar-universiteti",
+    "full_name_uz": "Samarqand veterinariya meditsinasi, chorvachilik va biotexnologiyalar universiteti",
+    "full_name_ru": "Самаркандский университет ветеринарной медицины, животноводства и биотехнологии",
+    "full_name_en": "Samarkand Veterinary Medicine, Livestock and Biotechnology University"
+  },
+  {
+    "id": 87,
+    "slug": "samarqand-davlat-universitetining-ozbekiston-finlyandiya-pedagogika-instituti",
+    "full_name_uz": "Samarqand davlat universitetining O‘zbekiston-Finlyandiya pedagogika instituti",
+    "full_name_ru": "Узбекско-финский педагогический институт Самаркандского государственного университета",
+    "full_name_en": "Samarqand State University's Uzbekistan-Finland Pedagogical Institute"
+  },
+  {
+    "id": 113,
+    "slug": "islom-karimov-nomidagi-toshkent-davlat-texnika-universiteti-qoshma-talim",
+    "full_name_uz": "Islom Karimov nomidagi Toshkent Davlat Texnika Universiteti (Qo'shma ta'lim)",
+    "full_name_ru": "Ташкентский государственный технический университет имени Ислама Каримова (совместные образовательные программы)",
+    "full_name_en": "Tashkent State Technical University named after Islam Karimov (Joint Educational Programs)"
+  },
+  {
+    "id": 111,
+    "slug": "toshkent-davlat-sharqshunoslik-universiteti-qoshma-talimlari",
+    "full_name_uz": "Toshkent davlat sharqshunoslik universiteti (Qo'shma ta'limlari)",
+    "full_name_ru": "Ташкентский государственный университет востоковедения (Совместное обучение)",
+    "full_name_en": "Tashkent State University of Oriental Studies (Joint Studies)"
+  },
+  {
+    "id": 211,
+    "slug": "toshkent-turizm-va-mehmonxona-menejmenti-texnikumi",
+    "full_name_uz": "Toshkent turizm va mehmonxona menejmenti texnikumi",
+    "full_name_ru": "Ташкентский техникум туризма и гостиничного менеджмента",
+    "full_name_en": "Tashkent technical school of tourism and hotel management"
+  },
+  {
+    "id": 35,
+    "slug": "ipak-yoli-xalqaro-turizm-universiteti",
+    "full_name_uz": "Ipak yo‘li xalqaro turizm universiteti",
+    "full_name_ru": "Международный университет туризма Шелкового пути",
+    "full_name_en": "International Tourism University."
+  },
+  {
+    "id": 107,
+    "slug": "toshkent-davlat-iqtisodiyot-universiteti-samarqand-filiali",
+    "full_name_uz": "Toshkent davlat iqtisodiyot universiteti Samarqand filiali",
+    "full_name_ru": "Самаркандский филиал Ташкентского государственного экономического университета",
+    "full_name_en": "Tashkent State University of Economics, Samarkand Branch."
+  },
+  {
+    "id": 179,
+    "slug": "toshkent-davlat-iqtisodiyot-universiteti-samarqand-filiali-qoshma-talim-dasturlari",
+    "full_name_uz": "Toshkent Davlat Iqtisodiyot Universiteti Samarqand filiali (Qo'shma Ta'lim Dasturlari)",
+    "full_name_ru": "Самаркандский филиал Ташкентского государственного экономического университета (совместные образовательные программы)",
+    "full_name_en": "Samarkand Branch of Tashkent State University of Economics (Joint Educational Programs)"
+  },
+  {
+    "id": 83,
+    "slug": "samarqand-davlat-universiteti-kattaqorgon-filiali",
+    "full_name_uz": "Samarqand davlat universiteti Kattaqo‘rg‘on filiali",
+    "full_name_ru": "Каттакорганский филиал Самаркандского государственного университета",
+    "full_name_en": "Samarqand State University, Kattaqo'rg'on Branch"
+  },
+  {
+    "id": 72,
+    "slug": "qoraqalpogiston-qishloq-xojaligi-va-agrotexnologiyalar-instituti",
+    "full_name_uz": "Qoraqalpog‘iston qishloq xo‘jaligi va agrotexnologiyalar instituti",
+    "full_name_ru": "Каракалпакский институт сельского хозяйства и агротехнологий",
+    "full_name_en": "Karakalpakstan Agricultural and Agrotechnological Institute"
+  },
+  {
+    "id": 30,
+    "slug": "fargona-davlat-universiteti",
+    "full_name_uz": "Farg‘ona davlat universiteti",
+    "full_name_ru": "Ферганский государственный университет",
+    "full_name_en": "Fargona State University"
+  },
+  {
+    "id": 86,
+    "slug": "samarqand-davlat-universitetining-muhandislik-fizikasi-instituti",
+    "full_name_uz": "Samarqand davlat universitetining Muhandislik fizikasi instituti",
+    "full_name_ru": "Институт инженерной физики Самаркандского государственного университета",
+    "full_name_en": "Engineering Physics Institute of Samarkand State University"
+  },
+  {
+    "id": 64,
+    "slug": "mirzo-ulugbek-nomidagi-ozbekiston-milliy-universiteti",
+    "full_name_uz": "Mirzo ulug'bek nomidagi O'zbekiston milliy universiteti",
+    "full_name_ru": "Национальный университет Республики Узбекистан им. М. Улугбека",
+    "full_name_en": "Mirzo Ulugbek National University of Uzbekistan"
+  },
+  {
+    "id": 33,
+    "slug": "geologiya-fanlari-universiteti",
+    "full_name_uz": "Geologiya fanlari universiteti",
+    "full_name_ru": "Университет геологических наук",
+    "full_name_en": "Geology Department of the University"
+  },
+  {
+    "id": 82,
+    "slug": "samarqand-davlat-universiteti",
+    "full_name_uz": "Samarqand davlat universiteti",
+    "full_name_ru": "Самаркандский государственный университет",
+    "full_name_en": "Samarqand State University"
+  },
+  {
+    "id": 66,
+    "slug": "ozbekiston-xalqaro-islom-akademiyasi",
+    "full_name_uz": "O‘zbekiston xalqaro islom akademiyasi",
+    "full_name_ru": "Международная исламская академия Узбекистана",
+    "full_name_en": "Uzbekistan International Islamic Academy"
+  },
+  {
+    "id": 54,
+    "slug": "ozbekiston-davlat-jahon-tillari-universiteti",
+    "full_name_uz": "O‘zbekiston davlat jahon tillari universiteti",
+    "full_name_ru": "Узбекский государственный университет мировых языков",
+    "full_name_en": "University of World Languages in Uzbekistan"
+  },
+  {
+    "id": 63,
+    "slug": "ozbekiston-jurnalistika-va-ommaviy-kommunikatsiyalar-universiteti",
+    "full_name_uz": "O‘zbekiston jurnalistika va ommaviy kommunikatsiyalar universiteti",
+    "full_name_ru": "Университет журналистики и массовых коммуникаций Узбекистана",
+    "full_name_en": "Uzbekistan University of Journalism and Mass Communications"
+  },
+  {
+    "id": 127,
+    "slug": "toshkent-viloyati-chirchiq-davlat-pedagogika-instituti",
+    "full_name_uz": "Toshkent viloyati Chirchiq davlat pedagogika instituti",
+    "full_name_ru": "Ташкентская область Чирчикский государственный педагогический институт",
+    "full_name_en": "Chirchiq State Pedagogical Institute in Tashkent region."
+  },
+  {
+    "id": 80,
+    "slug": "samarqand-davlat-chet-tillari-instituti-payariq-xorijiy-tillar-fakulteti",
+    "full_name_uz": "Samarqand davlat chet tillari instituti Payariq “Xorijiy tillar” fakulteti",
+    "full_name_ru": "Самаркандский Государственный Институт Иностранных Языков Паярикский факультет «Иностранные языки»",
+    "full_name_en": "Samarkand State Institute of Foreign Languages, Faculty of \"Foreign Languages\""
+  },
+  {
+    "id": 55,
+    "slug": "ozbekiston-davlat-jismoniy-tarbiya-va-sport-universiteti",
+    "full_name_uz": "O‘zbekiston davlat jismoniy tarbiya va sport universiteti",
+    "full_name_ru": "Государственный университет физического воспитания и спорта Узбекистана",
+    "full_name_en": "Uzbekistan State Institute of Physical Education and Sports."
+  },
+  {
+    "id": 199,
+    "slug": "oliy-sport-mahorati-instituti",
+    "full_name_uz": "Oliy sport mahorati instituti",
+    "full_name_ru": "Oliy sport mahorati instituti",
+    "full_name_en": "Oliy sport mahorati instituti"
+  },
+  {
+    "id": 186,
+    "slug": "boshqa",
+    "full_name_uz": "Boshqa",
+    "full_name_ru": "Другой",
+    "full_name_en": null
+  },
+  {
+    "id": 170,
+    "slug": "president-tech-award",
+    "full_name_uz": "President Tech Award",
+    "full_name_ru": "President Tech Award",
+    "full_name_en": null
+  },
+  {
+    "id": 110,
+    "slug": "toshkent-davlat-pedagogika-universiteti",
+    "full_name_uz": "Toshkent davlat pedagogika universiteti",
+    "full_name_ru": "Ташкентский государственный педагогический университет",
+    "full_name_en": "Tashkent State Pedagogical University"
+  },
+  {
+    "id": 125,
+    "slug": "toshkent-tibbiyot-akademiyasining-termiz-filiali",
+    "full_name_uz": "Toshkent tibbiyot akademiyasining Termiz filiali",
+    "full_name_ru": "Термезский филиал Ташкентской медицинской академии",
+    "full_name_en": "Termiz Branch of Tashkent Medical Academy"
+  },
+  {
+    "id": 129,
+    "slug": "toshkent-irrigatsiya-va-qishloq-xojaligini-mexanizatsiyalash-muhandislari-instituti-milliy-tadqiqot-universiteti",
+    "full_name_uz": "“Toshkent irrigatsiya va qishloq xo‘jaligini mexanizatsiyalash muhandislari instituti” milliy tadqiqot universiteti",
+    "full_name_ru": "Национальный исследовательский университет «Ташкентский институт инженеров ирригации и механизации сельского хозяйства»",
+    "full_name_en": "\"Tashkent Institute of Irrigation and Agricultural Mechanization Engineers\" National Research University."
+  },
+  {
+    "id": 190,
+    "slug": "demo-university",
+    "full_name_uz": "Demo university",
+    "full_name_ru": "Demo university",
+    "full_name_en": "Demo university"
+  },
+  {
+    "id": 206,
+    "slug": "for-test1",
+    "full_name_uz": "For test1",
+    "full_name_ru": "For test1",
+    "full_name_en": "For test1"
+  },
+  {
+    "id": 46,
+    "slug": "namangan-muhandislik-qurilish-instituti",
+    "full_name_uz": "Namangan muhandislik-qurilish instituti",
+    "full_name_ru": "Наманганский инженерно-строительный институт",
+    "full_name_en": "Namangan Engineering and Construction Institute"
+  },
+  {
+    "id": 44,
+    "slug": "namangan-davlat-chet-tillari-instituti",
+    "full_name_uz": "Namangan davlat chet tillari instituti",
+    "full_name_ru": "Наманганский государственный институт иностранных языков",
+    "full_name_en": "Namangan state institute of foreign languages"
+  },
+  {
+    "id": 120,
+    "slug": "toshkent-kimyo-texnologiya-instituti-yangiyer-filiali",
+    "full_name_uz": "Toshkent kimyo-texnologiya instituti Yangiyer filiali",
+    "full_name_ru": "Янгиерский филиал Ташкентского химико-технологического института",
+    "full_name_en": "Tashkent Institute of Chemical Technology - Yangiyer branch"
+  },
+  {
+    "id": 90,
+    "slug": "samarqand-veterinariya-meditsinasi-chorvachilik-va-biotexnologiyalar-universiteti-nukus-filiali",
+    "full_name_uz": "Samarqand veterinariya meditsinasi, chorvachilik va biotexnologiyalar universiteti Nukus filiali",
+    "full_name_ru": "Самаркандский университет ветеринарной медицины, животноводства и биотехнологии, Нукусский филиал",
+    "full_name_en": "Samarqand Veterinary Medicine, Livestock and Biotechnology University Nukus branch."
+  },
+  {
+    "id": 116,
+    "slug": "toshkent-davlat-yuridik-universiteti",
+    "full_name_uz": "Toshkent davlat yuridik universiteti",
+    "full_name_ru": "Ташкентский государственный юридический университет",
+    "full_name_en": "Tashkent State University of Law"
+  },
+  {
+    "id": 88,
+    "slug": "samarqand-iqtisodiyot-va-servis-instituti",
+    "full_name_uz": "Samarqand iqtisodiyot va servis instituti",
+    "full_name_ru": "Самаркандский институт экономики и сервиса",
+    "full_name_en": "Samarkand Economy and Services Institute"
+  },
+  {
+    "id": 45,
+    "slug": "namangan-davlat-universiteti",
+    "full_name_uz": "Namangan davlat universiteti",
+    "full_name_ru": "Наманганский государственный университет",
+    "full_name_en": "Namangan State University"
+  },
+  {
+    "id": 95,
+    "slug": "termiz-muhandislik-texnologiya-instituti",
+    "full_name_uz": "Termiz muhandislik-texnologiya instituti",
+    "full_name_ru": "Термезский инженерно-технологический институт",
+    "full_name_en": "Termiz Engineering and Technology Institute"
+  },
+  {
+    "id": 117,
+    "slug": "toshkent-farmatsevtika-instituti",
+    "full_name_uz": "Toshkent farmatsevtika instituti",
+    "full_name_ru": "Ташкентский фармацевтический институт",
+    "full_name_en": "Tashkent Pharmaceutical Institute"
+  },
+  {
+    "id": 123,
+    "slug": "toshkent-tibbiyot-akademiyasi",
+    "full_name_uz": "Toshkent tibbiyot akademiyasi",
+    "full_name_ru": "Ташкентская медицинская академия",
+    "full_name_en": "Tashkent Medical Academy."
+  },
+  {
+    "id": 32,
+    "slug": "fargona-politexnika-instituti",
+    "full_name_uz": "Farg‘ona politexnika instituti",
+    "full_name_ru": "Ферганский политехнический институт",
+    "full_name_en": "Fergana Polytechnic Institute"
+  },
+  {
+    "id": 28,
+    "slug": "buxoro-muhandislik-texnologiya-instituti",
+    "full_name_uz": "Buxoro muhandislik-texnologiya instituti",
+    "full_name_ru": "Бухарский инженерно-технологический институт",
+    "full_name_en": "Bukhara Engineering and Technology Institute"
+  },
+  {
+    "id": 93,
+    "slug": "termiz-davlat-universiteti",
+    "full_name_uz": "Termiz davlat universiteti",
+    "full_name_ru": "Термезский государственный университет",
+    "full_name_en": "Termiz State University"
+  },
+  {
+    "id": 128,
+    "slug": "urganch-davlat-universiteti",
+    "full_name_uz": "Urganch davlat universiteti",
+    "full_name_ru": "Ургенчский государственный университет",
+    "full_name_en": "Urgench State University"
+  },
+  {
+    "id": 194,
+    "slug": "oziq-ovqat-texnologiyasi-va-muhandisligi-xalqaro-instituti",
+    "full_name_uz": "Oziq-ovqat texnologiyasi va muhandisligi xalqaro instituti",
+    "full_name_ru": "Международный институт пищевых технологий и инженерии",
+    "full_name_en": "International Institute of Food Technology and Engineering"
+  },
+  {
+    "id": 37,
+    "slug": "jahon-iqtisodiyoti-va-diplomatiya-universiteti",
+    "full_name_uz": "Jahon iqtisodiyoti va diplomatiya universiteti",
+    "full_name_ru": "Университет мировой экономики и дипломатии",
+    "full_name_en": "World Economy and Diplomacy University"
+  },
+  {
+    "id": 155,
+    "slug": "islom-karimov-nomidagi-toshkent-davlat-texnika-universiteti",
+    "full_name_uz": "Islom Karimov nomidagi Toshkent Davlat Texnika Universiteti",
+    "full_name_ru": "Ташкентский государственный технический университет имени Ислама Каримова",
+    "full_name_en": "Tashkent State Technical University named after Islam Karimov"
+  },
+  {
+    "id": 183,
+    "slug": "ozbekiston-ichki-ishlar-vazirligi-akademiyasi",
+    "full_name_uz": "O'zbekiston ichki ishlar vazirligi akademiyasi",
+    "full_name_ru": "Академия МВД Узбекистана",
+    "full_name_en": "Ministry of Internal Affairs Academy of Uzbekistan"
+  },
+  {
+    "id": 52,
+    "slug": "ozbekiston-davlat-xoreografiya-akademiyasi-urganch-filiali",
+    "full_name_uz": "Oʻzbekiston davlat xoreografiya akademiyasi Urganch filiali",
+    "full_name_ru": "Ургенчский филиал Государственной академии хореографии Узбекистана",
+    "full_name_en": "Urgench Branch of the Uzbekistan State Choreography Academy"
+  },
+  {
+    "id": 22,
+    "slug": "andijon-iqtisodiyot-va-qurilish-instituti",
+    "full_name_uz": "Andijon iqtisodiyot va qurilish instituti",
+    "full_name_ru": "Андижанский институт экономики и строительства",
+    "full_name_en": "Andijon Economic and Construction Institute"
+  },
+  {
+    "id": 42,
+    "slug": "milliy-rassomlik-va-dizayn-instituti",
+    "full_name_uz": "Milliy rassomlik va dizayn instituti",
+    "full_name_ru": "Национальный институт искусства и дизайна",
+    "full_name_en": "National Art and Design Institute"
+  },
+  {
+    "id": 195,
+    "slug": "toshkent-moliya-instituti-andijon-fakulteti",
+    "full_name_uz": "Toshkent moliya instituti Andijon fakulteti",
+    "full_name_ru": "Toshkent moliya instituti Andijon fakulteti",
+    "full_name_en": "Toshkent moliya instituti Andijon fakulteti"
+  },
+  {
+    "id": 34,
+    "slug": "guliston-davlat-universiteti",
+    "full_name_uz": "Guliston davlat universiteti",
+    "full_name_ru": "Гулистанский государственный университет",
+    "full_name_en": "Gulistan State University"
+  },
+  {
+    "id": 81,
+    "slug": "samarqand-davlat-tibbiyot-universiteti",
+    "full_name_uz": "Samarqand davlat tibbiyot universiteti",
+    "full_name_ru": "Самаркандский государственный медицинский университет",
+    "full_name_en": "Samarkand State Medical University"
+  },
+  {
+    "id": 74,
+    "slug": "qoraqalpoq-davlat-universiteti",
+    "full_name_uz": "Qoraqalpoq davlat universiteti",
+    "full_name_ru": "Каракалпакский государственный университет",
+    "full_name_en": "Qoraqalpoq State University"
+  },
+  {
+    "id": 114,
+    "slug": "toshkent-davlat-texnika-universitetining-olmaliq-filiali",
+    "full_name_uz": "Toshkent davlat texnika universitetining Olmaliq filiali",
+    "full_name_ru": "Алмалыкский филиал Ташкентского государственного технического университета",
+    "full_name_en": "\"Olmaliq branch of Tashkent State Technical University\""
+  },
+  {
+    "id": 48,
+    "slug": "navoiy-davlat-konchilik-va-texnologiyalar-universiteti",
+    "full_name_uz": "Navoiy davlat konchilik va texnologiyalar universiteti",
+    "full_name_ru": "Навоийский государственный горно-технологический университет",
+    "full_name_en": "Navoi State Mining and Technology University"
+  },
+  {
+    "id": 99,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti-nukus-filiali",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti Nukus filiali",
+    "full_name_ru": "Нукусский филиал Ташкентского университета информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies' Nukus Branch."
+  },
+  {
+    "id": 70,
+    "slug": "qarshi-irrigatsiya-va-agrotexnologiyalar-instituti",
+    "full_name_uz": "Qarshi irrigatsiya va agrotexnologiyalar instituti",
+    "full_name_ru": "Каршинский институт ирригации и агротехнологий",
+    "full_name_en": "Qarshi Irrigation and Agrotechnology Institute"
+  },
+  {
+    "id": 62,
+    "slug": "ozbekiston-davlat-xoreografiya-akademiyasi",
+    "full_name_uz": "O‘zbekiston davlat xoreografiya akademiyasi",
+    "full_name_ru": "Государственная академия хореографии Узбекистана",
+    "full_name_en": "Uzbekistan State Choreography Academy"
+  },
+  {
+    "id": 126,
+    "slug": "toshkent-toqimachilik-va-yengil-sanoat-instituti",
+    "full_name_uz": "Toshkent to‘qimachilik va yengil sanoat instituti",
+    "full_name_ru": "Ташкентский институт текстильной и легкой промышленности",
+    "full_name_en": "Tashkent Textile and Light Industry Institute"
+  },
+  {
+    "id": 196,
+    "slug": "guliston-davlat-pedagogika-instituti",
+    "full_name_uz": "Guliston davlat pedagogika instituti",
+    "full_name_ru": "Guliston davlat pedagogika instituti",
+    "full_name_en": "Guliston davlat pedagogika instituti"
+  },
+  {
+    "id": 61,
+    "slug": "ozbekiston-davlat-sanat-va-madaniyat-instituti-nukus-filiali",
+    "full_name_uz": "O‘zbekiston davlat san‘at va madaniyat instituti Nukus filiali",
+    "full_name_ru": "Нукусский филиал Государственного института искусства и культуры Узбекистана",
+    "full_name_en": "Uzbekistan State Institute of Arts and Culture, Nukus Branch"
+  },
+  {
+    "id": 115,
+    "slug": "toshkent-davlat-transport-universiteti",
+    "full_name_uz": "Toshkent davlat transport universiteti",
+    "full_name_ru": "Ташкентский государственный университет путей сообщения",
+    "full_name_en": "Tashkent State Transport University"
+  },
+  {
+    "id": 94,
+    "slug": "termiz-davlat-universitetining-pedagogika-instituti",
+    "full_name_uz": "Termiz davlat universitetining Pedagogika instituti",
+    "full_name_ru": "Педагогический институт Термезского государственного университета",
+    "full_name_en": "Pedagogical Institute of Termiz State University"
+  },
+  {
+    "id": 97,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti",
+    "full_name_ru": "Ташкентский университет информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies"
+  },
+  {
+    "id": 75,
+    "slug": "qoraqalpoq-davlat-universiteti-chimboy-fakulteti",
+    "full_name_uz": "Qoraqalpoq davlat universiteti Chimboy fakulteti",
+    "full_name_ru": "Чимбойский факультет Каракалпакского государственного университета",
+    "full_name_en": "Chimboy Faculty of Karakalpak State University"
+  },
+  {
+    "id": 122,
+    "slug": "toshkent-pediatriya-tibbiyot-instituti",
+    "full_name_uz": "Toshkent pediatriya tibbiyot instituti",
+    "full_name_ru": "Ташкентский педиатрический медицинский институт",
+    "full_name_en": "Tashkent Pediatric Medical Institute"
+  },
+  {
+    "id": 26,
+    "slug": "buxoro-davlat-universiteti",
+    "full_name_uz": "Buxoro davlat universiteti",
+    "full_name_ru": "Бухарский государственный университет",
+    "full_name_en": "Bukhara State University"
+  },
+  {
+    "id": 121,
+    "slug": "toshkent-moliya-instituti",
+    "full_name_uz": "Toshkent moliya instituti",
+    "full_name_ru": "Ташкентский финансовый институт",
+    "full_name_en": "Tashkent Financial Institute (in Uzbekistan)"
+  },
+  {
+    "id": 106,
+    "slug": "toshkent-davlat-iqtisodiyot-universiteti",
+    "full_name_uz": "Toshkent davlat iqtisodiyot universiteti",
+    "full_name_ru": "Ташкентский государственный экономический университет",
+    "full_name_en": "Tashkent State University of Economics"
+  },
+  {
+    "id": 20,
+    "slug": "andijon-davlat-universiteti",
+    "full_name_uz": "Andijon davlat universiteti",
+    "full_name_ru": "Андижанский государственный университет",
+    "full_name_en": "Andijan State University"
+  },
+  {
+    "id": 100,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti-nurafshon-filiali",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti Nurafshon filiali",
+    "full_name_ru": "Нурафшонский филиал Ташкентского университета информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies Nurafshon branch."
+  },
+  {
+    "id": 76,
+    "slug": "qoqon-davlat-pedagogika-instituti",
+    "full_name_uz": "Qo‘qon davlat pedagogika instituti",
+    "full_name_ru": "Коканский государственный педагогический институт",
+    "full_name_en": "Kokand State Pedagogical Institute"
+  },
+  {
+    "id": 67,
+    "slug": "ozbekiston-davlat-jismoniy-tarbiya-va-sport-universiteti-fargona-filiali",
+    "full_name_uz": "O‘zbekiston davlat jismoniy tarbiya va sport universiteti Farg‘ona filiali",
+    "full_name_ru": "Ферганский филиал Государственного университета физической культуры и спорта Узбекистана",
+    "full_name_en": "Fergana branch of the Uzbekistan State Institute of Physical Culture and Sports"
+  },
+  {
+    "id": 118,
+    "slug": "toshkent-kimyo-texnologiya-instituti",
+    "full_name_uz": "Toshkent kimyo-texnologiya instituti",
+    "full_name_ru": "Ташкентский химико-технологический институт",
+    "full_name_en": "Tashkent Chemical Technology Institute"
+  },
+  {
+    "id": 98,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti-fargona-filiali",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti Farg‘ona filiali",
+    "full_name_ru": "Ферганский филиал Ташкентского университета информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies Fergana Branch"
+  },
+  {
+    "id": 104,
+    "slug": "toshkent-davlat-agrar-universiteti",
+    "full_name_uz": "Toshkent davlat agrar universiteti",
+    "full_name_ru": "Ташкентский государственный аграрный университет",
+    "full_name_en": "Tashkent State Agriculture University"
+  },
+  {
+    "id": 197,
+    "slug": "namangan-davlat-pedagogika-instituti",
+    "full_name_uz": "Namangan davlat pedagogika instituti",
+    "full_name_ru": "Namangan davlat pedagogika instituti",
+    "full_name_en": "Namangan davlat pedagogika instituti"
+  },
+  {
+    "id": 58,
+    "slug": "ozbekiston-davlat-konservatoriyasi-nukus-filiali",
+    "full_name_uz": "O‘zbekiston davlat konservatoriyasi Nukus filiali",
+    "full_name_ru": "Нукусский филиал Государственной консерватории Узбекистана",
+    "full_name_en": "Nukus branch of the Uzbekistan State Conservatory"
+  },
+  {
+    "id": 109,
+    "slug": "alisher-navoiy-nomidagi-toshkent-davlat-ozbek-tili-va-adabiyoti-universiteti",
+    "full_name_uz": "Alisher Navoiy nomidagi Toshkent davlat o‘zbek tili va adabiyoti universiteti",
+    "full_name_ru": "Ташкентский государственный университет узбекского языка и литературы имени Алишера Навои",
+    "full_name_en": "Tashkent State University of Uzbek Language and Literature named after Alisher Navoi"
+  },
+  {
+    "id": 59,
+    "slug": "ozbekiston-davlat-sanat-va-madaniyat-institutining-fargona-mintaqaviy-filiali",
+    "full_name_uz": "O‘zbekiston davlat sanʼat va madaniyat institutining Farg‘ona mintaqaviy filiali",
+    "full_name_ru": "Ферганский областной филиал Государственного института искусства и культуры Узбекистана",
+    "full_name_en": "Ferghana Regional Branch of the State Institute of Arts and Culture of Uzbekistan."
+  },
+  {
+    "id": 105,
+    "slug": "toshkent-davlat-agrar-universitetining-samarqand-filiali",
+    "full_name_uz": "Toshkent davlat agrar universitetining Samarqand filiali",
+    "full_name_ru": "Самаркандский филиал Ташкентского государственного аграрного университета",
+    "full_name_en": "Samarqand Branch of Tashkent State Agrarian University."
+  },
+  {
+    "id": 43,
+    "slug": "mirzo-ulugbek-nomidagi-ozbekiston-milliy-universiteti-jizzax-filiali",
+    "full_name_uz": "Mirzo Ulug‘bek nomidagi O'zbekiston milliy universiteti Jizzax filiali",
+    "full_name_ru": "Джизакский филиал Национального университета Узбекистана имени Мирзо Улугбека",
+    "full_name_en": "Mirzo Ulugbek University of Uzbekistan, Jizzakh branch."
+  },
+  {
+    "id": 56,
+    "slug": "ozbekiston-davlat-jismoniy-tarbiya-va-sport-universiteti-nukus-filiali",
+    "full_name_uz": "O‘zbekiston davlat jismoniy tarbiya va sport universiteti Nukus filiali",
+    "full_name_ru": "Нукусский филиал Государственного университета физической культуры и спорта Узбекистана",
+    "full_name_en": "Nukus Branch of the State Institute of Physical Education and Sports in Uzbekistan."
+  },
+  {
+    "id": 103,
+    "slug": "toshkent-axborot-texnologiyalari-universiteti-urganch-filiali",
+    "full_name_uz": "Toshkent axborot texnologiyalari universiteti Urganch filiali",
+    "full_name_ru": "Ургенчский филиал Ташкентского университета информационных технологий",
+    "full_name_en": "Tashkent University of Information Technologies, Urgench Branch."
+  },
+  {
+    "id": 187,
+    "slug": "oqishga-kira-olmagan",
+    "full_name_uz": "O'qishga kira olmagan",
+    "full_name_ru": "O'qishga kira olmagan",
+    "full_name_en": "Unable to attend school."
+  },
+  {
+    "id": 91,
+    "slug": "samarqand-veterinariya-meditsinasi-chorvachilik-va-biotexnologiyalar-universiteti-toshkent-filiali",
+    "full_name_uz": "Samarqand veterinariya meditsinasi, chorvachilik va biotexnologiyalar universiteti Toshkent filiali",
+    "full_name_ru": "Ташкентский филиал Самаркандского университета ветеринарной медицины, животноводства и биотехнологии",
+    "full_name_en": "Samarkand Veterinary Medicine, Animal Husbandry and Biotechnology University, Tashkent Branch"
+  },
+  {
+    "id": 49,
+    "slug": "navoiy-davlat-pedagogika-universiteti",
+    "full_name_uz": "Navoiy davlat pedagogika universiteti",
+    "full_name_ru": "Навоийский государственный педагогический институт",
+    "full_name_en": "Navoi State Pedagogical University."
+  },
+  {
+    "id": 57,
+    "slug": "ozbekiston-davlat-konservatoriyasi",
+    "full_name_uz": "O‘zbekiston davlat konservatoriyasi",
+    "full_name_ru": "Государственная консерватория Узбекистана",
+    "full_name_en": "Uzbekistan State Conservatory"
+  },
+  {
+    "id": 38,
+    "slug": "jamoat-xavfsizligi-universiteti",
+    "full_name_uz": "JAMOAT XAVFSIZLIGI UNIVERSITETI",
+    "full_name_ru": "УНИВЕРСИТЕТ ОБЩЕСТВЕННОЙ БЕЗОПАСНОСТИ",
+    "full_name_en": "UNIVERSITY OF PUBLIC SAFETY"
+  },
+  {
+    "id": 50,
+    "slug": "nukus-davlat-pedagogika-instituti",
+    "full_name_uz": "Nukus davlat pedagogika instituti",
+    "full_name_ru": "Нукусский государственный педагогический институт",
+    "full_name_en": "Nukus State Pedagogical Institute"
+  },
+  {
+    "id": 124,
+    "slug": "toshkent-tibbiyot-akademiyasi-urganch-filiali",
+    "full_name_uz": "Toshkent tibbiyot akademiyasi Urganch filiali",
+    "full_name_ru": "Ургенчский филиал Ташкентской медицинской академии",
+    "full_name_en": "Tashkent Medical Academy Urgench branch"
+  },
+  {
+    "id": 47,
+    "slug": "namangan-muhandislik-texnologiya-instituti",
+    "full_name_uz": "Namangan muhandislik-texnologiya instituti",
+    "full_name_ru": "Наманганский инженерно-технологический институт",
+    "full_name_en": "Namangan Engineering and Technology Institute."
+  },
+  {
+    "id": 119,
+    "slug": "toshkent-kimyo-texnologiya-instituti-shahrisabz-filiali",
+    "full_name_uz": "Toshkent kimyo-texnologiya instituti Shahrisabz filiali",
+    "full_name_ru": "Шахрисабзский филиал Ташкентского химико-технологического института",
+    "full_name_en": "Tashkent Institute of Chemical Technology Shahrisabz branch."
+  },
+  {
+    "id": 69,
+    "slug": "qarshi-davlat-universitetining-pedagogika-instituti",
+    "full_name_uz": "Qarshi davlat universitetining Pedagogika instituti",
+    "full_name_ru": "Педагогический институт Каршинского государственного университета",
+    "full_name_en": "Pedagogical Institute of Qarshi State University"
+  },
+  {
+    "id": 71,
+    "slug": "qarshi-muhandislik-iqtisodiyot-instituti",
+    "full_name_uz": "Qarshi muhandislik-iqtisodiyot instituti",
+    "full_name_ru": "Каршинский инженерно-экономический институт",
+    "full_name_en": "Qarshi Engineering and Economics Institute"
+  },
+  {
+    "id": 108,
+    "slug": "toshkent-davlat-iqtisodiyot-universiteti-tortkol-fakulteti",
+    "full_name_uz": "Toshkent davlat iqtisodiyot universiteti To‘rtko‘l fakulteti",
+    "full_name_ru": "Ташкентский государственный экономический университет, Торткольский факультет",
+    "full_name_en": "Faculty of Economics at Tashkent State University of Economics."
+  },
+  {
+    "id": 243,
+    "slug": "profi-university-navoiy-filliali",
+    "full_name_uz": "Profi University Navoiy filliali",
+    "full_name_ru": "Навоийский филиал Profi University",
+    "full_name_en": "Profi University Navoiy Branch"
+  },
+  {
+    "id": 239,
+    "slug": "angren-universiteti",
+    "full_name_uz": "Angren universiteti",
+    "full_name_ru": "Ангренский университет",
+    "full_name_en": "Angren University"
+  },
+  {
+    "id": 246,
+    "slug": "termiz-iqtisodiyot-va-servis-universiteti",
+    "full_name_uz": "Termiz iqtisodiyot va servis universiteti",
+    "full_name_ru": "Термезский университет экономики и сервиса",
+    "full_name_en": "Termez University of Economics and Service"
+  },
+  {
+    "id": 232,
+    "slug": "gvplexanov-nomidagi-rossiya-iqtisodiyot-universiteti",
+    "full_name_uz": "G.V.Plexanov nomidagi Rossiya iqtisodiyot universiteti",
+    "full_name_ru": " Российский экономический университет имени Г.В. Плеханова",
+    "full_name_en": "Plekhanov Russian University of Economics"
+  },
+  {
+    "id": 77,
+    "slug": "samarqand-davlat-arxitektura-qurilish-instituti",
+    "full_name_uz": "Samarqand davlat arxitektura-qurilish instituti",
+    "full_name_ru": "Самаркандский государственный архитектурно-строительный институт",
+    "full_name_en": "Samarqand State Institute of Architecture and Construction"
+  }
+]

@@ -21,6 +21,8 @@ class UniversityOut(BaseModel):
     name_ru: Optional[str]
     website: Optional[str]
     logo_url: Optional[str]
+    mt_id: Optional[int]
+    mt_slug: Optional[str]
     scrape_status: str
     last_scraped_at: Optional[datetime]
     last_error_message: Optional[str]
@@ -38,6 +40,8 @@ class UniversityCreate(BaseModel):
     name_en: Optional[str] = None
     name_ru: Optional[str] = None
     website: Optional[str] = None
+    mt_id: Optional[int] = None
+    mt_slug: Optional[str] = None
 
 
 class UniversityUpdate(BaseModel):
@@ -48,6 +52,8 @@ class UniversityUpdate(BaseModel):
     website: Optional[str] = None
     logo_url: Optional[str] = None
     scrape_status: Optional[str] = None
+    mt_id: Optional[int] = None
+    mt_slug: Optional[str] = None
 
 
 class PaginatedUniversities(BaseModel):
@@ -66,13 +72,15 @@ async def list_universities(
 ):
     q = select(University)
     if search:
-        q = q.where(
-            or_(
-                University.name_uz.ilike(f"%{search}%"),
-                University.name_en.ilike(f"%{search}%"),
-                University.name_ru.ilike(f"%{search}%"),
-            )
+        # PostgreSQL Full-Text Search across languages
+        ts_vector = func.to_tsvector('simple', 
+            func.coalesce(University.name_uz, '') + ' ' + 
+            func.coalesce(University.name_en, '') + ' ' + 
+            func.coalesce(University.name_ru, '')
         )
+        ts_query = func.plainto_tsquery('simple', search)
+        q = q.where(ts_vector.op('@@')(ts_query))
+        q = q.order_by(func.ts_rank(ts_vector, ts_query).desc())
     if region_id:
         q = q.where(University.region_id == region_id)
     if status:

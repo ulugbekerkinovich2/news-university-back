@@ -11,7 +11,7 @@ os.makedirs(f"{BROKER_DIR}/processed", exist_ok=True)
 celery_app = Celery(
     "university_scraper",
     broker=f"filesystem://",
-    backend="db+sqlite:///data/celery_results.db",
+    backend=os.getenv("CELERY_RESULT_BACKEND", "db+postgresql+psycopg2://m3:postgres@localhost:5432/university_hub") if os.getenv("DATABASE_URL") else "db+sqlite:///data/celery_results.db",
 )
 
 celery_app.conf.update(
@@ -32,7 +32,35 @@ celery_app.conf.update(
             "task": "tasks.scrape_all_universities",
             "schedule": crontab(minute=0, hour="*/6"),
         },
+        "cleanup-old-jobs-daily": {
+            "task": "tasks.cleanup_old_jobs",
+            "schedule": crontab(minute=30, hour=3),
+        },
     },
     beat_scheduler="celery.beat:PersistentScheduler",
     beat_schedule_filename="celery_data/celerybeat-schedule",
 )
+
+@celery_app.task(name="tasks.cleanup_old_jobs")
+def cleanup_old_jobs():
+    """Delete scrape jobs and events older than 7 days to save space."""
+    from sqlalchemy import create_engine, delete
+    from sqlalchemy.orm import Session
+    from datetime import datetime, timedelta
+    import os
+    
+    db_url = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
+    if "+asyncpg" in db_url:
+        db_url = db_url.replace("+asyncpg", "")
+        
+    engine = create_engine(db_url)
+    from app.models import ScrapeJob, ScrapeJobEvent
+    
+    threshold = datetime.utcnow() - timedelta(days=7)
+    
+    with Session(engine) as session:
+        # Delete events first (foreign key)
+        session.execute(delete(ScrapeJobEvent).where(ScrapeJobEvent.created_at < threshold))
+        # Delete jobs
+        session.execute(delete(ScrapeJob).where(ScrapeJob.created_at < threshold))
+        session.commit()

@@ -64,6 +64,11 @@ class University(Base):
     name_ru = Column(String, nullable=True)
     website = Column(String, nullable=True)
     logo_url = Column(String, nullable=True)
+    
+    # Metadata for external API linking
+    mt_id = Column(Integer, nullable=True, index=True)
+    mt_slug = Column(String, nullable=True, index=True)
+
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     scrape_status = Column(Enum(ScrapeStatus), default=ScrapeStatus.IDLE, nullable=False, index=True)
@@ -80,7 +85,7 @@ class MediaAsset(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     post_id = Column(String, ForeignKey("news_posts.id", ondelete="CASCADE"), nullable=True, index=True)
     type = Column(Enum(MediaType), default=MediaType.image, nullable=False)
-    original_url = Column(String, nullable=False, unique=True)
+    original_url = Column(String, nullable=False)
     stored_url = Column(String, nullable=True)
     provider = Column(String, nullable=True)
     width = Column(Integer, nullable=True)

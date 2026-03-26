@@ -29,12 +29,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS — allow all origins for local dev
+# CORS — allow specific origins in production
 origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -55,9 +55,9 @@ class UniversityAdmin(ModelView, model=University):
     name = "University"
     name_plural = "Universities"
     icon = "fa-solid fa-university"
-    column_list = [University.id, University.name_uz, University.region_id, University.scrape_status, University.last_scraped_at]
-    column_searchable_list = [University.name_uz, University.name_en, University.name_ru, University.id]
-    column_sortable_list = [University.name_uz, University.scrape_status, University.last_scraped_at]
+    column_list = [University.id, University.mt_id, University.mt_slug, University.name_uz, University.region_id, University.scrape_status, University.last_scraped_at]
+    column_searchable_list = [University.name_uz, University.name_en, University.name_ru, University.id, University.mt_slug]
+    column_sortable_list = [University.name_uz, University.scrape_status, University.last_scraped_at, University.mt_id]
 
 
 class NewsPostAdmin(ModelView, model=NewsPost):
@@ -120,3 +120,26 @@ admin.add_view(ApiKeyAdmin)
 @app.get("/")
 async def health():
     return {"status": "ok", "message": "University News Hub API is running"}
+
+
+# ── Additional Documentation ────────────────────────────────────────────────
+
+from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
+
+@app.get("/api-docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Interactive Docs",
+        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+        swagger_js_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js",
+        swagger_css_url="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css",
+    )
+
+@app.get("/public-docs", include_in_schema=False)
+async def custom_redoc_html():
+    return get_redoc_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Redoc",
+        redoc_js_url="https://unpkg.com/redoc@next/bundles/redoc.standalone.js",
+    )

@@ -17,12 +17,14 @@ Features:
 
 import asyncio
 import hashlib
+import os
 import random
 import re
 import uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Optional, Set, List
-from urllib.parse import urljoin, urlparse
+from urllib.parse import parse_qs, quote_plus, urljoin, urlparse
 
 import feedparser
 import httpx
@@ -36,12 +38,15 @@ from sqlalchemy import select, update
 from app.tasks.celery_app import celery_app
 
 # ── Config ─────────────────────────────────────────────────────────────────
-DATABASE_URL = "sqlite+aiosqlite:///./data/app.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
 MAX_LINKS_PER_SITE = 40       # max article URLs to try per university
 MAX_PAGES = 5                   # max pagination depth
 REQUEST_TIMEOUT = 20            # seconds
 RETRY_COUNT = 3
 RETRY_BACKOFF = 2.0            # seconds (doubled each retry)
+DISCOVERY_CONCURRENCY = 3
+ARTICLE_FETCH_CONCURRENCY = 6
+SCRAPER_WORKERS = 6
 
 # Patterns that signal a news/article URL on Uzbek university sites
 # Covers: /news/, /yangilik/, /xabar/, /maqola/, /press/, /blog/
@@ -76,14 +81,66 @@ SITEMAP_PATHS = [
     "/news-sitemap.xml", "/sitemap-index.xml",
 ]
 
+DIRECT_SECTION_PATHS = [
+    "/news",
+    "/news/",
+    "/news/all",
+    "/news/list",
+    "/yangiliklar",
+    "/yangiliklar/",
+    "/yangiliklar/barchasi",
+    "/yangilik",
+    "/yangilik/",
+    "/uz/news",
+    "/uz/news/",
+    "/uz/yangiliklar",
+    "/oz/news",
+    "/oz/news/",
+    "/oz/yangiliklar",
+    "/en/news",
+    "/en/news/",
+    "/ru/news",
+    "/ru/news/",
+    "/press",
+    "/press/",
+    "/press-center",
+    "/press-center/",
+    "/blog",
+    "/blog/",
+    "/events",
+    "/events/",
+    "/announcements",
+    "/elonlar",
+    "/e-lonlar",
+    "/category/news",
+]
+
+SEARCH_BLOCKLIST_HOSTS = {
+    "google.com", "www.google.com", "maps.google.com", "google.uz", "www.google.uz",
+    "bing.com", "www.bing.com", "duckduckgo.com", "www.duckduckgo.com",
+    "youtube.com", "www.youtube.com", "instagram.com", "www.instagram.com",
+    "facebook.com", "www.facebook.com", "t.me", "telegram.me", "linkedin.com",
+    "www.linkedin.com", "wikipedia.org", "www.wikipedia.org",
+}
+
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/119.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15",
+]
+
+def _get_random_user_agent():
+    return random.choice(USER_AGENTS)
+
 HEADERS = {
-    "User-Agent": (
-        "Mozilla/5.0 (compatible; UniversityNewsBot/2.0; "
-        "+https://university-hub.uz/bot)"
-    ),
+    "User-Agent": _get_random_user_agent(),
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "uz,en;q=0.9,ru;q=0.8",
 }
+
+SCRAPER_EXECUTOR = ThreadPoolExecutor(max_workers=SCRAPER_WORKERS, thread_name_prefix="scraper")
 
 
 # ── Engine helpers ──────────────────────────────────────────────────────────
@@ -102,8 +159,11 @@ async def _fetch(client: httpx.AsyncClient, url: str, retries: int = RETRY_COUNT
     """Fetch URL with exponential backoff retries."""
     delay = RETRY_BACKOFF
     for attempt in range(retries):
+        # Rotate UA for every request
+        req_headers = HEADERS.copy()
+        req_headers["User-Agent"] = _get_random_user_agent()
         try:
-            resp = await client.get(url, headers=HEADERS, timeout=REQUEST_TIMEOUT, follow_redirects=True)
+            resp = await client.get(url, headers=req_headers, timeout=REQUEST_TIMEOUT, follow_redirects=True)
             if resp.status_code < 400:
                 return resp
         except (httpx.RequestError, httpx.TimeoutException):
@@ -115,8 +175,117 @@ async def _fetch(client: httpx.AsyncClient, url: str, retries: int = RETRY_COUNT
 
 
 async def _polite_delay():
-    """Random delay between 0.5s and 2s to be polite to servers."""
-    await asyncio.sleep(random.uniform(0.5, 2.0))
+    """Short jitter to avoid hammering a single server while keeping throughput high."""
+    await asyncio.sleep(random.uniform(0.15, 0.45))
+
+
+async def _send_telegram_notification(message: str):
+    """Send a notification to a Telegram chat on critical errors."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID")
+    if not token or not chat_id:
+        return
+    
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post(url, json={"chat_id": chat_id, "text": message, "parse_mode": "HTML"})
+    except Exception as e:
+        print(f"Failed to send Telegram notification: {e}")
+
+
+async def _gather_fetch_texts(
+    client: httpx.AsyncClient,
+    urls: List[str],
+    *,
+    retries: int = RETRY_COUNT,
+    limit: int = ARTICLE_FETCH_CONCURRENCY,
+) -> List[tuple[str, Optional[str]]]:
+    semaphore = asyncio.Semaphore(limit)
+
+    async def _worker(target_url: str) -> tuple[str, Optional[str]]:
+        async with semaphore:
+            resp = await _fetch(client, target_url, retries=retries)
+            return target_url, (resp.text if resp else None)
+
+    return await asyncio.gather(*[_worker(url) for url in urls])
+
+
+def _clean_search_result_url(url: str) -> Optional[str]:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"}:
+        return None
+    hostname = (parsed.hostname or "").lower()
+    if not hostname or any(hostname == blocked or hostname.endswith(f".{blocked}") for blocked in SEARCH_BLOCKLIST_HOSTS):
+        return None
+    if re.search(r"(google|bing|duckduckgo|youtube|instagram|facebook|telegram|linkedin|wikipedia)", hostname):
+        return None
+    return f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+
+
+def _extract_google_result_links(html: str) -> List[str]:
+    soup = BeautifulSoup(html, "html.parser")
+    results: List[str] = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"]
+        if href.startswith("/url?"):
+            q = parse_qs(urlparse(href).query).get("q", [None])[0]
+            if q:
+                cleaned = _clean_search_result_url(q)
+                if cleaned and cleaned not in results:
+                    results.append(cleaned)
+    return results
+
+
+def _extract_duckduckgo_result_links(html: str) -> List[str]:
+    soup = BeautifulSoup(html, "html.parser")
+    results: List[str] = []
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        cleaned = _clean_search_result_url(href)
+        if cleaned and cleaned not in results:
+            results.append(cleaned)
+    return results
+
+
+def _build_site_search_queries(uni) -> List[str]:
+    names = []
+    for candidate in [getattr(uni, "name_uz", None), getattr(uni, "name_en", None), getattr(uni, "name_ru", None)]:
+        if candidate:
+            normalized = " ".join(str(candidate).split())
+            if normalized and normalized not in names:
+                names.append(normalized)
+
+    suffixes = [
+        "official website university uzbekistan",
+        "rasmiy sayt universitet",
+        "sayt universiteti",
+    ]
+
+    queries: List[str] = []
+    for name in names[:2]:
+        for suffix in suffixes:
+            queries.append(f"{name} {suffix}")
+    return queries[:6]
+
+
+async def _find_university_website_via_search(client: httpx.AsyncClient, uni) -> Optional[str]:
+    """Search for a better official website when stored URL is broken."""
+    queries = _build_site_search_queries(uni)
+    for query in queries:
+        google_url = f"https://www.google.com/search?q={quote_plus(query)}&hl=en"
+        resp = await _fetch(client, google_url, retries=1)
+        if resp:
+            for candidate in _extract_google_result_links(resp.text):
+                return candidate
+
+        ddg_url = f"https://duckduckgo.com/html/?q={quote_plus(query)}"
+        resp = await _fetch(client, ddg_url, retries=1)
+        if resp:
+            for candidate in _extract_duckduckgo_result_links(resp.text):
+                return candidate
+
+    return None
 
 
 # ── Link discovery ──────────────────────────────────────────────────────────
@@ -233,6 +402,63 @@ def _extract_links_from_page(html: str, base_url: str) -> Set[str]:
     return links
 
 
+def _extract_candidate_section_urls(html: str, base_url: str) -> Set[str]:
+    """Find likely listing pages from navigation/footer links."""
+    soup = BeautifulSoup(html, "html.parser")
+    base = urlparse(base_url)
+    section_urls: Set[str] = set()
+    section_keywords = (
+        "news", "yangilik", "yangiliklar", "xabar", "matbuot", "press",
+        "blog", "event", "e'lon", "elon", "announcement", "media", "post"
+    )
+
+    for a in soup.find_all("a", href=True):
+        href = a["href"].strip()
+        text = " ".join(a.get_text(" ", strip=True).lower().split())
+        full = urljoin(base_url, href)
+        parsed = urlparse(full)
+        if parsed.netloc and parsed.netloc != base.netloc:
+            continue
+        normalized = full.split("#")[0].rstrip("/")
+        path = parsed.path.lower()
+        if any(keyword in path for keyword in section_keywords) or any(keyword in text for keyword in section_keywords):
+            if normalized:
+                section_urls.add(normalized)
+
+    return section_urls
+
+
+async def _discover_via_direct_sections(
+    client: httpx.AsyncClient,
+    base_url: str,
+    candidate_section_urls: Optional[Set[str]] = None,
+) -> tuple[Set[str], int]:
+    """Probe common listing pages directly, useful when homepage navigation hides article links."""
+    probe_urls = {
+        base_url.rstrip("/") + path
+        for path in DIRECT_SECTION_PATHS
+    }
+    if candidate_section_urls:
+        probe_urls |= set(candidate_section_urls)
+
+    section_hits = 0
+    links: Set[str] = set()
+    for section_url, html in await _gather_fetch_texts(
+        client,
+        list(probe_urls),
+        retries=1,
+        limit=DISCOVERY_CONCURRENCY,
+    ):
+        if not html:
+            continue
+        section_hits += 1
+        links |= _extract_links_from_page(html, section_url)
+        if len(links) < MAX_LINKS_PER_SITE:
+            links |= await _discover_paginated(client, section_url, html)
+
+    return links, section_hits
+
+
 async def _discover_paginated(
     client: httpx.AsyncClient, base_url: str, first_html: str
 ) -> Set[str]:
@@ -296,27 +522,81 @@ def _extract_og_image(soup: BeautifulSoup) -> Optional[str]:
     """Extract og:image or first article image."""
     og = soup.find("meta", property="og:image")
     if og:
-        return og.get("content")
+        content = og.get("content", "").strip()
+        if content and not content.startswith(("data:", "javascript:")):
+            return content
     # first article/main img
     for container in ["article", "main", "section"]:
         el = soup.find(container)
         if el:
             img = el.find("img", src=True)
             if img:
-                return img["src"]
+                src = img["src"].strip()
+                if src and not src.startswith(("data:", "javascript:")):
+                    return src
     return None
 
 
 def _detect_language(text: str) -> str:
+    """Heuristic + langdetect for Uzbek, Russian, English."""
+    if not text or len(text) < 10:
+        return "uz"
+        
+    text_lower = text.lower()
+    # 1. Uzbek Cyrillic specific characters
+    if any(c in text_lower for c in "ўқғҳ"):
+        return "uz"
+    
+    # 2. Uzbek Latin combined characters/words
+    uz_markers = [" o'z", " oʻz", " davlat", " universitet", " talaba", " viloyat", " tuman", " bo'lim"]
+    if any(m in text_lower for m in uz_markers):
+        return "uz"
+        
     try:
-        lang = detect(text[:1000])
-        return lang if lang else "unknown"
+        lang = detect(text[:2000])
+        # langdetect often flags Uzbek as Albanian (sq) or Romanian (ro)
+        if lang in ["sq", "ro", "tr"]:
+            return "uz"
+        return lang if lang else "uz"
     except LangDetectException:
-        return "unknown"
+        return "uz"
 
 
 def _content_fingerprint(url: str, title: str) -> str:
     return hashlib.sha256(f"{url}||{title}".encode()).hexdigest()
+
+
+def _is_invalid_article_payload(title: str, content_text: str, url: str) -> bool:
+    title_lower = (title or "").strip().lower()
+    content_lower = (content_text or "").strip().lower()
+
+    # Hard reject obvious error pages and placeholders.
+    invalid_title_markers = {
+        "error 404", "404", "page not found", "not found",
+        "access denied", "forbidden", "service unavailable",
+    }
+    if title_lower in invalid_title_markers:
+        return True
+
+    # Navigation-only / boilerplate-heavy pages should not become articles.
+    boilerplate_markers = [
+        "menyu", "biz haqimizda", "infratuzilma", "hamkorlik", "qabul 2026",
+        "admissions", "student life", "trening va joylashtirish",
+        "yangiliklar va voqealar", "school of engineering",
+    ]
+    boilerplate_hits = sum(1 for marker in boilerplate_markers if marker in content_lower)
+    if boilerplate_hits >= 5:
+        return True
+
+    # Very short or mostly menu-like pages are usually not real news.
+    if len(content_lower) < 180:
+        return True
+
+    if url.lower().endswith((".html", "/index")) and "news" not in url.lower() and "yangilik" not in url.lower():
+        if boilerplate_hits >= 3:
+            return True
+
+    return False
 
 
 def _extract_article(html: str, url: str) -> dict:
@@ -359,8 +639,17 @@ def _extract_article(html: str, url: str) -> dict:
     if not published_at:
         published_at = _extract_date(soup)
 
-    # Summary: first 300 chars of content
-    summary = content_text[:300].strip() if content_text else None
+    # Summary: first real paragraph (skip short/boilerplates)
+    summary = None
+    if content_text:
+        paragraphs = [p.strip() for p in content_text.split('\n') if len(p.strip()) > 80]
+        if paragraphs:
+            # Use the first long paragraph as summary
+            summary = paragraphs[0][:400].strip()
+            if len(summary) < 100 and len(paragraphs) > 1:
+                summary = paragraphs[1][:400].strip()
+        else:
+            summary = content_text[:300].strip()
 
     og_image = _extract_og_image(soup)
     language = _detect_language(content_text or title)
@@ -395,6 +684,53 @@ def _extract_article(html: str, url: str) -> dict:
         "og_image": og_image,
         "images": images[:10],  # limit to 10
     }
+
+
+async def _discover_root_links(
+    client: httpx.AsyncClient,
+    root_url: str,
+    homepage_html: Optional[str],
+) -> tuple[str, Set[str], list[str]]:
+    links: Set[str] = set()
+    logs: list[str] = []
+
+    rss_links = await _discover_via_rss(client, root_url)
+    if rss_links:
+        links |= rss_links
+        logs.append(f"[{root_url}] RSS: {len(rss_links)} ta maqola")
+
+    if len(links) < MAX_LINKS_PER_SITE:
+        sitemap_links = await _discover_via_sitemap(client, root_url)
+        if sitemap_links:
+            links |= sitemap_links
+            logs.append(f"[{root_url}] Sitemap: {len(sitemap_links)} ta maqola")
+
+    if len(links) < MAX_LINKS_PER_SITE:
+        html = homepage_html
+        if html is None:
+            resp = await _fetch(client, root_url, retries=1)
+            html = resp.text if resp else None
+        if html:
+            page_links = await _discover_paginated(client, root_url, html)
+            if page_links:
+                links |= page_links
+            logs.append(f"[{root_url}] Heuristic: {len(page_links)} ta maqola")
+
+            if len(links) < MAX_LINKS_PER_SITE:
+                section_candidates = _extract_candidate_section_urls(html, root_url)
+                section_links, section_hits = await _discover_via_direct_sections(
+                    client,
+                    root_url,
+                    section_candidates,
+                )
+                if section_links:
+                    links |= section_links
+                logs.append(
+                    f"[{root_url}] Direct sections: {len(section_links)} ta maqola "
+                    f"({section_hits} section tekshirildi)"
+                )
+
+    return root_url, links, logs
 
 
 # ── Main async scraper ──────────────────────────────────────────────────────
@@ -457,9 +793,15 @@ async def _scrape_university_async(university_id: str, job_id: str):
         saved_count = 0
         skipped_count = 0
         error_count = 0
+        attempted_site_search = False
 
         try:
-            async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, follow_redirects=True) as client:
+            limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
+            async with httpx.AsyncClient(
+                timeout=REQUEST_TIMEOUT,
+                follow_redirects=True,
+                limits=limits,
+            ) as client:
 
                 # ── DISCOVER ─────────────────────────────────────────────
                 await _add_event(
@@ -506,8 +848,30 @@ async def _scrape_university_async(university_id: str, job_id: str):
                 # ── LANGUAGE ROOTS DISCOVERY ────────────────────────────
                 all_root_urls = {base_url}
                 homepage_resp = await _fetch(client, base_url)
-                if homepage_resp:
-                    lang_urls = _discover_language_folders(homepage_resp.text, base_url)
+                homepage_html = homepage_resp.text if homepage_resp else None
+
+                if not homepage_html and not attempted_site_search:
+                    discovered_website = await _find_university_website_via_search(client, uni)
+                    attempted_site_search = True
+                    if discovered_website and discovered_website.rstrip("/") != base_url.rstrip("/"):
+                        await db.execute(
+                            update(University).where(University.id == university_id)
+                            .values(website=discovered_website, updated_at=datetime.utcnow())
+                        )
+                        await db.commit()
+                        await _add_event(
+                            db,
+                            job_id,
+                            university_id,
+                            ScrapeStage.DISCOVER,
+                            f"Website auto-updated via search: {discovered_website}"
+                        )
+                        base_url = discovered_website.rstrip("/")
+                        homepage_resp = await _fetch(client, base_url)
+                        homepage_html = homepage_resp.text if homepage_resp else None
+
+                if homepage_html:
+                    lang_urls = _discover_language_folders(homepage_html, base_url)
                     all_root_urls |= lang_urls
 
                 await _add_event(
@@ -515,38 +879,79 @@ async def _scrape_university_async(university_id: str, job_id: str):
                     f"Aniqlangan til bo'limlari: {', '.join(all_root_urls)}"
                 )
 
-                for root_url in all_root_urls:
-                    await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Branch qidirilmoqda: {root_url}")
-                    
-                    # 1. RSS feeds
-                    rss_links = await _discover_via_rss(client, root_url)
-                    if rss_links:
-                        article_links |= rss_links
-                        await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[{root_url}] RSS: {len(rss_links)} ta maqola")
+                discovery_tasks = [
+                    _discover_root_links(
+                        client,
+                        root_url,
+                        homepage_html if root_url == base_url else None,
+                    )
+                    for root_url in list(all_root_urls)[:DISCOVERY_CONCURRENCY]
+                ]
+                remaining_root_urls = list(all_root_urls)[DISCOVERY_CONCURRENCY:]
 
-                    # 2. Sitemap.xml
-                    if len(article_links) < MAX_LINKS_PER_SITE:
-                        sitemap_links = await _discover_via_sitemap(client, root_url)
-                        if sitemap_links:
-                            article_links |= sitemap_links
-                            await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[{root_url}] Sitemap: {len(sitemap_links)} ta maqola")
+                discovered_batches = await asyncio.gather(*discovery_tasks, return_exceptions=True)
 
-                    # 3. Heuristic homepage crawl
-                    if len(article_links) < MAX_LINKS_PER_SITE:
-                        try:
-                            # If it's the base_url we already have homepage_resp.text, else fetch
-                            html = homepage_resp.text if root_url == base_url else (await _fetch(client, root_url)).text
-                            if html:
-                                page_links = await _discover_paginated(client, root_url, html)
-                                article_links |= page_links
-                                await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[{root_url}] Heuristic: {len(page_links)} ta maqola")
-                        except Exception as e:
-                            pass
+                for root_url in remaining_root_urls:
+                    discovered_batches += [await _discover_root_links(client, root_url, None)]
+
+                for batch in discovered_batches:
+                    if isinstance(batch, Exception):
+                        continue
+                    root_url, found_links, logs = batch
+                    await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"Branch qidirildi: {root_url}")
+                    article_links |= found_links
+                    for log in logs:
+                        await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, log)
 
                 await _add_event(
                     db, job_id, university_id, ScrapeStage.DISCOVER,
                     f"Heuristic crawl: jami {len(article_links)} ta maqola topildi"
                 )
+
+                if not article_links and homepage_html and not attempted_site_search:
+                    discovered_website = await _find_university_website_via_search(client, uni)
+                    attempted_site_search = True
+                    if discovered_website and discovered_website.rstrip("/") != base_url.rstrip("/"):
+                        await db.execute(
+                            update(University).where(University.id == university_id)
+                            .values(website=discovered_website, updated_at=datetime.utcnow())
+                        )
+                        await db.commit()
+                        await _add_event(
+                            db,
+                            job_id,
+                            university_id,
+                            ScrapeStage.DISCOVER,
+                            f"No article links found. Website refreshed via search: {discovered_website}"
+                        )
+
+                        base_url = discovered_website.rstrip("/")
+                        article_links = set()
+                        homepage_resp = await _fetch(client, base_url)
+                        homepage_html = homepage_resp.text if homepage_resp else None
+                        all_root_urls = {base_url}
+                        if homepage_html:
+                            all_root_urls |= _discover_language_folders(homepage_html, base_url)
+
+                        discovered_batches = await asyncio.gather(*[
+                            _discover_root_links(
+                                client,
+                                root_url,
+                                homepage_html if root_url == base_url else None,
+                            )
+                            for root_url in list(all_root_urls)[:DISCOVERY_CONCURRENCY]
+                        ], return_exceptions=True)
+
+                        for root_url in list(all_root_urls)[DISCOVERY_CONCURRENCY:]:
+                            discovered_batches += [await _discover_root_links(client, root_url, None)]
+
+                        for batch in discovered_batches:
+                            if isinstance(batch, Exception):
+                                continue
+                            _, found_links, logs = batch
+                            article_links |= found_links
+                            for log in logs:
+                                await _add_event(db, job_id, university_id, ScrapeStage.DISCOVER, f"[auto-search] {log}")
 
                 # Limit total
                 article_links_list = list(article_links)[:MAX_LINKS_PER_SITE]
@@ -558,18 +963,26 @@ async def _scrape_university_async(university_id: str, job_id: str):
                 )
 
                 # ── PARSE ────────────────────────────────────────────────
-                for idx, url in enumerate(article_links_list):
-                    await _polite_delay()
+                prefetched_articles = await _gather_fetch_texts(
+                    client,
+                    article_links_list,
+                    retries=RETRY_COUNT,
+                    limit=ARTICLE_FETCH_CONCURRENCY,
+                )
 
-                    resp = await _fetch(client, url)
-                    if not resp:
+                for idx, (url, html) in enumerate(prefetched_articles, start=1):
+                    if not html:
                         error_count += 1
                         continue
 
                     try:
-                        article = _extract_article(resp.text, url)
+                        article = _extract_article(html, url)
                         title = article["title"]
                         if not title or len(title) < 5:
+                            skipped_count += 1
+                            continue
+
+                        if _is_invalid_article_payload(title, article["content_text"], url):
                             skipped_count += 1
                             continue
 
@@ -642,12 +1055,12 @@ async def _scrape_university_async(university_id: str, job_id: str):
                                 db.add(asset)
 
                         # Commit every 5 posts
-                        if saved_count % 5 == 0:
+                        if saved_count > 0 and saved_count % 5 == 0:
                             await db.commit()
                             await _add_event(
                                 db, job_id, university_id, ScrapeStage.PARSE,
-                                f"Progress: {saved_count} saved, {skipped_count} skipped",
-                                {"saved": saved_count, "skipped": skipped_count}
+                                f"Progress: {saved_count} saved, {skipped_count} skipped, {idx}/{len(prefetched_articles)} ko'rildi",
+                                {"saved": saved_count, "skipped": skipped_count, "processed": idx}
                             )
 
                     except Exception as e:
@@ -662,13 +1075,30 @@ async def _scrape_university_async(university_id: str, job_id: str):
                     {"saved": saved_count, "skipped": skipped_count, "errors": error_count}
                 )
 
-                final_status = ScrapeStatus.DONE if saved_count > 0 else ScrapeStatus.NO_NEWS
+                if saved_count > 0 or skipped_count > 0:
+                    final_status = ScrapeStatus.DONE
+                    last_error_message = None
+                elif article_links_list and error_count > 0:
+                    final_status = ScrapeStatus.FAILED
+                    last_error_message = (
+                        f"Candidates found ({len(article_links_list)}), "
+                        f"but all fetch/parse attempts failed"
+                    )
+                else:
+                    final_status = ScrapeStatus.NO_NEWS
+                    last_error_message = None
+
+                if final_status == ScrapeStatus.FAILED:
+                    await _send_telegram_notification(
+                        f"⚠️ <b>Scrape Failed</b>\nUniversity: {uni.name_uz}\nURL: {base_url}\nError: {last_error_message}"
+                    )
+
                 await db.execute(
                     update(University).where(University.id == university_id)
                     .values(
                         scrape_status=final_status,
                         last_scraped_at=datetime.utcnow(),
-                        last_error_message=None,
+                        last_error_message=last_error_message,
                     )
                 )
                 await db.execute(
@@ -677,6 +1107,7 @@ async def _scrape_university_async(university_id: str, job_id: str):
                         status=JobStatus.DONE,
                         finished_at=datetime.utcnow(),
                         totals_json={
+                            "candidates": len(article_links_list),
                             "saved": saved_count,
                             "skipped": skipped_count,
                             "errors": error_count,
@@ -726,6 +1157,11 @@ def _scrape_university_async_in_thread(university_id: str, job_id: str):
         loop.close()
 
 
+def launch_scrape_job(university_id: str, job_id: str):
+    """Submit a scrape job to the shared executor so API requests don't serialize work."""
+    return SCRAPER_EXECUTOR.submit(_scrape_university_async_in_thread, university_id, job_id)
+
+
 @celery_app.task(name="tasks.scrape_all_universities")
 def scrape_all_universities():
     """Periodic task: queue jobs for all universities that have a website."""
@@ -733,7 +1169,12 @@ def scrape_all_universities():
     from sqlalchemy import create_engine
     from sqlalchemy.orm import Session as SyncSession
 
-    sync_engine = create_engine("sqlite:///./data/app.db")
+    # Postgres sync engine from async URL
+    db_url = os.getenv("DATABASE_URL", "sqlite:///./data/app.db")
+    if "+asyncpg" in db_url:
+        db_url = db_url.replace("+asyncpg", "") # asyncpg -> sync (psycopg2)
+    
+    sync_engine = create_engine(db_url)
     from app.models import University, ScrapeJob, JobStatus, JobScope, ScrapeStatus
 
     with SyncSession(sync_engine) as db:
@@ -752,4 +1193,4 @@ def scrape_all_universities():
             db.add(job)
             db.commit()
             db.refresh(job)
-            _scrape_university_async_in_thread(uni.id, job.id)
+            launch_scrape_job(uni.id, job.id)

@@ -1,7 +1,8 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
 import os
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
 
+# Keep the app aligned with the scraper/README defaults so local runs use one DB.
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
 
 engine = create_async_engine(DATABASE_URL, echo=False, future=True)

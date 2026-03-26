@@ -1,10 +1,9 @@
 import uuid
 from datetime import datetime
 from typing import Optional, List
-from fastapi import APIRouter, Depends, HTTPException, Query, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
-from sqlalchemy.orm import selectinload
 from pydantic import BaseModel
 
 from app.core.database import get_db
@@ -161,10 +160,9 @@ async def live_jobs(
 @router.post("", response_model=ScrapeJobOut, status_code=201)
 async def create_job(
     data: ScrapeJobCreate,
-    background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db),
 ):
-    from app.tasks.scraper import _scrape_university_async_in_thread
+    from app.tasks.scraper import launch_scrape_job
 
     scope = JobScope.ALL_UNIVERSITIES if data.scope == "ALL_UNIVERSITIES" else JobScope.SINGLE_UNIVERSITY
 
@@ -182,14 +180,15 @@ async def create_job(
     await db.refresh(job)
 
     if scope == JobScope.SINGLE_UNIVERSITY:
-        background_tasks.add_task(_scrape_university_async_in_thread, data.university_id, job.id)
+        launch_scrape_job(data.university_id, job.id)
     else:
-        # Queue child jobs for all universities with websites, run in thread pool
+        # Queue child jobs for all universities with websites, then dispatch in parallel.
         q = select(University).where(University.website.isnot(None))
         if data.status_filters:
             q = q.where(University.scrape_status.in_(data.status_filters))
         result = await db.execute(q)
         universities = result.scalars().all()
+        queued_count = 0
         for uni in universities:
             child_job = ScrapeJob(
                 id=str(uuid.uuid4()),
@@ -200,7 +199,14 @@ async def create_job(
             db.add(child_job)
             await db.commit()
             await db.refresh(child_job)
-            background_tasks.add_task(_scrape_university_async_in_thread, uni.id, child_job.id)
+            launch_scrape_job(uni.id, child_job.id)
+            queued_count += 1
+
+        job.status = JobStatus.DONE
+        job.finished_at = datetime.utcnow()
+        job.totals_json = {"queued": queued_count}
+        await db.commit()
+        await db.refresh(job)
 
     return job
 
