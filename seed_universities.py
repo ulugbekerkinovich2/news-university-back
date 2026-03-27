@@ -12,16 +12,14 @@ from datetime import datetime
 # Set working directory to backend folder
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import select
-
+from dotenv import load_dotenv
+load_dotenv()
 
 async def seed():
-    from app.core.database import init_db
+    from app.core.database import init_db, engine
     from app.models import University, ScrapeStatus
 
-    engine = create_async_engine("sqlite+aiosqlite:///./data/app.db", echo=False)
+    # Ensure tables exist
     await init_db()
 
     Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
