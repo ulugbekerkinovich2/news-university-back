@@ -2,8 +2,9 @@ import os
 from dotenv import load_dotenv
 load_dotenv()  # loads backend/.env
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 from contextlib import asynccontextmanager
 from sqladmin import Admin, ModelView
 
@@ -46,6 +47,24 @@ app.include_router(api_router)
 
 # Static files for uploads
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response: Response = await call_next(request)
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "img-src 'self' data: https:; "
+        "style-src 'self' 'unsafe-inline' https:; "
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; "
+        "connect-src 'self' https: http:; "
+        "font-src 'self' data: https:;"
+    )
+    return response
 
 
 # ── SQLAdmin ──────────────────────────────────────────────────────────────────

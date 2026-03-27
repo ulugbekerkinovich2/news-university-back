@@ -45,6 +45,14 @@ def _migrate_existing_schema(sync_conn):
     if "approved_at" not in columns:
         timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
         statements.append(f"ALTER TABLE users ADD COLUMN approved_at {timestamp_type}")
+    if "failed_login_attempts" not in columns:
+        statements.append("ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0")
+    if "locked_until" not in columns:
+        timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
+        statements.append(f"ALTER TABLE users ADD COLUMN locked_until {timestamp_type}")
+    if "last_login_at" not in columns:
+        timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
+        statements.append(f"ALTER TABLE users ADD COLUMN last_login_at {timestamp_type}")
 
     for statement in statements:
         sync_conn.exec_driver_sql(statement)

@@ -1,5 +1,6 @@
 import json
-from datetime import datetime
+import re
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -14,6 +15,8 @@ from app.models import AppRole, User
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
+MAX_FAILED_LOGIN_ATTEMPTS = 5
+LOGIN_LOCK_MINUTES = 15
 
 ADMIN_PERMISSIONS = [
     "view_universities",
@@ -73,6 +76,22 @@ class TokenResponse(BaseModel):
     access_token: str
     token_type: str
     user: UserOut
+
+
+def _normalize_email(email: str) -> str:
+    normalized = (email or "").strip().lower()
+    if not normalized or "@" not in normalized:
+        raise HTTPException(status_code=400, detail="Valid email is required")
+    return normalized
+
+
+def _validate_password_strength(password: str) -> None:
+    if len(password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    if not re.search(r"[A-Za-z]", password):
+        raise HTTPException(status_code=400, detail="Password must include a letter")
+    if not re.search(r"\d", password):
+        raise HTTPException(status_code=400, detail="Password must include a number")
 
 
 def _normalize_role(role: Optional[str]) -> AppRole:
@@ -176,7 +195,10 @@ def require_any_permission(permissions: List[str]):
 
 @router.post("/register", response_model=RegisterResponse, status_code=201)
 async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
-    existing = await db.execute(select(User).where(User.email == data.email))
+    email = _normalize_email(data.email)
+    _validate_password_strength(data.password)
+
+    existing = await db.execute(select(User).where(User.email == email))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email already registered")
 
@@ -185,8 +207,8 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
     now = datetime.utcnow()
 
     user = User(
-        email=data.email,
-        display_name=data.display_name,
+        email=email,
+        display_name=(data.display_name or "").strip() or None,
         hashed_password=get_password_hash(data.password),
         role=AppRole.admin if is_first_user else AppRole.user,
         is_active=True if is_first_user else False,
@@ -208,9 +230,21 @@ async def register(data: UserRegister, db: AsyncSession = Depends(get_db)):
 
 @router.post("/token", response_model=TokenResponse)
 async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(User).where(User.email == form.username))
+    email = _normalize_email(form.username)
+    result = await db.execute(select(User).where(User.email == email))
     user = result.scalar_one_or_none()
-    if not user or not verify_password(form.password, user.hashed_password):
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect email or password")
+    now = datetime.utcnow()
+    if getattr(user, "locked_until", None) and user.locked_until > now:
+        remaining_minutes = max(1, int((user.locked_until - now).total_seconds() // 60))
+        raise HTTPException(status_code=423, detail=f"Account is temporarily locked for {remaining_minutes} minute(s)")
+    if not verify_password(form.password, user.hashed_password):
+        user.failed_login_attempts = int(getattr(user, "failed_login_attempts", 0) or 0) + 1
+        if user.failed_login_attempts >= MAX_FAILED_LOGIN_ATTEMPTS:
+            user.locked_until = now + timedelta(minutes=LOGIN_LOCK_MINUTES)
+            user.failed_login_attempts = 0
+        await db.commit()
         raise HTTPException(status_code=401, detail="Incorrect email or password")
     if getattr(user, "approval_status", "APPROVED") == "PENDING":
         raise HTTPException(status_code=403, detail="Account approval is pending")
@@ -219,6 +253,11 @@ async def login(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = 
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
+    user.failed_login_attempts = 0
+    user.locked_until = None
+    user.last_login_at = now
+    await db.commit()
+    await db.refresh(user)
     token = create_access_token(data={"sub": user.id})
     return {"access_token": token, "token_type": "bearer", "user": _serialize_user(user)}
 
