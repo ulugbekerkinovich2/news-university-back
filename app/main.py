@@ -97,7 +97,15 @@ class UserAdmin(ModelView, model=User):
     name = "User"
     name_plural = "Users"
     icon = "fa-solid fa-users"
-    column_list = [User.id, User.email, User.display_name, User.role, User.is_active, User.created_at]
+    column_list = [
+        User.id,
+        User.email,
+        User.display_name,
+        User.role,
+        User.approval_status,
+        User.is_active,
+        User.created_at,
+    ]
     column_searchable_list = [User.email, User.display_name]
     # Never show hashed_password in list
     form_excluded_columns = [User.hashed_password]

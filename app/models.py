@@ -158,6 +158,10 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     role = Column(Enum(AppRole), default=AppRole.user, nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
+    approval_status = Column(String, default="APPROVED", nullable=False)
+    permissions_json = Column(Text, default="[]", nullable=False)
+    approved_by = Column(String, nullable=True)
+    approved_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 
