@@ -23,7 +23,7 @@ import re
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from typing import Optional, Set, List
+from typing import List, Optional, Set, Tuple
 from urllib.parse import parse_qs, quote_plus, urljoin, urlparse
 
 import feedparser
@@ -200,10 +200,10 @@ async def _gather_fetch_texts(
     *,
     retries: int = RETRY_COUNT,
     limit: int = ARTICLE_FETCH_CONCURRENCY,
-) -> List[tuple[str, Optional[str]]]:
+) -> List[Tuple[str, Optional[str]]]:
     semaphore = asyncio.Semaphore(limit)
 
-    async def _worker(target_url: str) -> tuple[str, Optional[str]]:
+    async def _worker(target_url: str) -> Tuple[str, Optional[str]]:
         async with semaphore:
             resp = await _fetch(client, target_url, retries=retries)
             return target_url, (resp.text if resp else None)
@@ -432,7 +432,7 @@ async def _discover_via_direct_sections(
     client: httpx.AsyncClient,
     base_url: str,
     candidate_section_urls: Optional[Set[str]] = None,
-) -> tuple[Set[str], int]:
+) -> Tuple[Set[str], int]:
     """Probe common listing pages directly, useful when homepage navigation hides article links."""
     probe_urls = {
         base_url.rstrip("/") + path
@@ -690,7 +690,7 @@ async def _discover_root_links(
     client: httpx.AsyncClient,
     root_url: str,
     homepage_html: Optional[str],
-) -> tuple[str, Set[str], List[str]]:
+) -> Tuple[str, Set[str], List[str]]:
     links: Set[str] = set()
     logs: List[str] = []
 

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Optional, List
+from typing import Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
@@ -126,7 +126,7 @@ async def live_jobs(
     )
     all_events = events_result.scalars().all()
 
-    events_by_job: dict[str, list] = {}
+    events_by_job: Dict[str, list] = {}
     for ev in all_events:
         events_by_job.setdefault(ev.job_id, []).append(ev)
 
