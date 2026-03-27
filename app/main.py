@@ -14,10 +14,12 @@ from app.models import University, NewsPost, ScrapeJob, ScrapeJobEvent, MediaAss
 
 from fastapi.staticfiles import StaticFiles
 
+# Ensure required directories exist
+os.makedirs("data", exist_ok=True)
+os.makedirs("static/logos", exist_ok=True)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    os.makedirs("data", exist_ok=True)
-    os.makedirs("static/logos", exist_ok=True)
     await init_db()
     yield
 
