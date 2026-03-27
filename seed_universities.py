@@ -16,6 +16,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 async def seed():
+    from sqlalchemy.orm import sessionmaker
+    from sqlalchemy.ext.asyncio import AsyncSession
+    from sqlalchemy import select
     from app.core.database import init_db, engine
     from app.models import University, ScrapeStatus
 
