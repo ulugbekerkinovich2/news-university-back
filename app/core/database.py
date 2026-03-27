@@ -24,6 +24,7 @@ async def init_db():
 
 def _migrate_existing_schema(sync_conn):
     inspector = inspect(sync_conn)
+    dialect = sync_conn.dialect.name
     tables = set(inspector.get_table_names())
     if "users" not in tables:
         return
@@ -42,7 +43,8 @@ def _migrate_existing_schema(sync_conn):
     if "approved_by" not in columns:
         statements.append("ALTER TABLE users ADD COLUMN approved_by VARCHAR")
     if "approved_at" not in columns:
-        statements.append("ALTER TABLE users ADD COLUMN approved_at DATETIME")
+        timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
+        statements.append(f"ALTER TABLE users ADD COLUMN approved_at {timestamp_type}")
 
     for statement in statements:
         sync_conn.exec_driver_sql(statement)
