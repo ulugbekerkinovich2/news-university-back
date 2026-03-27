@@ -84,7 +84,7 @@ async def _resolve_university_ids(
     *,
     slug: Optional[str] = None,
     university_mt_id: Optional[int] = None,
-) -> list[str]:
+) -> List[str]:
     if university_mt_id is not None:
         return (await db.execute(
             select(University.id).where(University.mt_id == university_mt_id)
@@ -103,7 +103,7 @@ async def _resolve_university_ids(
         select(University.id, University.name_uz, University.name_en, University.name_ru)
     )).all()
 
-    matched_ids: list[str] = []
+    matched_ids: List[str] = []
     for university_id, name_uz, name_en, name_ru in universities:
         candidates = {
             _slugify(name_uz),

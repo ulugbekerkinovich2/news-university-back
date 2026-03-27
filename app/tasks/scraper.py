@@ -690,9 +690,9 @@ async def _discover_root_links(
     client: httpx.AsyncClient,
     root_url: str,
     homepage_html: Optional[str],
-) -> tuple[str, Set[str], list[str]]:
+) -> tuple[str, Set[str], List[str]]:
     links: Set[str] = set()
-    logs: list[str] = []
+    logs: List[str] = []
 
     rss_links = await _discover_via_rss(client, root_url)
     if rss_links:
