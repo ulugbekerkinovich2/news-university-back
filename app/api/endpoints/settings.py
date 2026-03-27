@@ -11,10 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
 
+from app.api.endpoints.auth import require_permission
 from app.core.database import get_db
 from app.models import SystemSetting
 
-router = APIRouter(prefix="/settings", tags=["Settings"])
+router = APIRouter(
+    prefix="/settings",
+    tags=["Settings"],
+    dependencies=[Depends(require_permission("manage_settings"))],
+)
 
 # Default values — returned when setting not in DB yet
 DEFAULTS: Dict[str, str] = {

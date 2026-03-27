@@ -4,11 +4,16 @@ from sqlalchemy import select, func
 from typing import List, Optional
 from pydantic import BaseModel
 
+from app.api.endpoints.auth import require_permission
 from app.core.database import get_db
 from app.models import University, NewsPost
 from .universities import UniversityOut, PaginatedUniversities
 
-router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+router = APIRouter(
+    prefix="/dashboard",
+    tags=["Dashboard"],
+    dependencies=[Depends(require_permission("view_dashboard"))],
+)
 
 class DashboardInitResponse(BaseModel):
     stats: dict

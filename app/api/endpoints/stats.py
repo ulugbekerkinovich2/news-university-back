@@ -3,10 +3,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from typing import List
 
+from app.api.endpoints.auth import require_permission
 from app.core.database import get_db
 from app.models import University, NewsPost, MediaAsset, ScrapeJob, ScrapeStatus
 
-router = APIRouter(prefix="/stats", tags=["Statistics"])
+router = APIRouter(
+    prefix="/stats",
+    tags=["Statistics"],
+    dependencies=[Depends(require_permission("view_dashboard"))],
+)
 
 
 @router.get("")

@@ -16,15 +16,18 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/token")
 
 ADMIN_PERMISSIONS = [
+    "view_universities",
     "manage_users",
     "manage_universities",
     "manage_scraping",
     "manage_api_keys",
     "manage_settings",
     "view_dashboard",
+    "export_data",
 ]
 USER_PERMISSIONS = [
     "view_dashboard",
+    "view_universities",
 ]
 ALLOWED_PERMISSIONS = sorted(set(ADMIN_PERMISSIONS + USER_PERMISSIONS))
 
@@ -153,6 +156,18 @@ def require_permission(permission: str):
         if current_user.role == AppRole.admin:
             return current_user
         if permission not in _effective_permissions(current_user):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
+        return current_user
+
+    return dependency
+
+
+def require_any_permission(permissions: List[str]):
+    async def dependency(current_user: User = Depends(get_current_user)) -> User:
+        if current_user.role == AppRole.admin:
+            return current_user
+        effective_permissions = _effective_permissions(current_user)
+        if not any(permission in effective_permissions for permission in permissions):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Permission denied")
         return current_user
 

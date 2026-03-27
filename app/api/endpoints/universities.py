@@ -7,6 +7,7 @@ from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 
+from app.api.endpoints.auth import require_any_permission, require_permission
 from app.core.database import get_db
 from app.models import University, ScrapeStatus
 
@@ -69,6 +70,7 @@ async def list_universities(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_any_permission(["view_universities", "export_data"])),
 ):
     q = select(University)
     if search:
@@ -97,7 +99,11 @@ async def list_universities(
 
 
 @router.get("/{university_id}", response_model=UniversityOut)
-async def get_university(university_id: str, db: AsyncSession = Depends(get_db)):
+async def get_university(
+    university_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_any_permission(["view_universities", "export_data"])),
+):
     result = await db.execute(select(University).where(University.id == university_id))
     uni = result.scalar_one_or_none()
     if not uni:
@@ -106,7 +112,11 @@ async def get_university(university_id: str, db: AsyncSession = Depends(get_db))
 
 
 @router.post("", response_model=UniversityOut, status_code=201)
-async def create_university(data: UniversityCreate, db: AsyncSession = Depends(get_db)):
+async def create_university(
+    data: UniversityCreate,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_universities")),
+):
     uni = University(
         id=data.id,
         region_id=data.region_id,
@@ -123,7 +133,12 @@ async def create_university(data: UniversityCreate, db: AsyncSession = Depends(g
 
 
 @router.put("/{university_id}", response_model=UniversityOut)
-async def update_university(university_id: str, data: UniversityUpdate, db: AsyncSession = Depends(get_db)):
+async def update_university(
+    university_id: str,
+    data: UniversityUpdate,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_universities")),
+):
     result = await db.execute(select(University).where(University.id == university_id))
     uni = result.scalar_one_or_none()
     if not uni:
@@ -137,7 +152,11 @@ async def update_university(university_id: str, data: UniversityUpdate, db: Asyn
 
 
 @router.delete("/{university_id}", status_code=204)
-async def delete_university(university_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_university(
+    university_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_universities")),
+):
     result = await db.execute(select(University).where(University.id == university_id))
     uni = result.scalar_one_or_none()
     if not uni:
@@ -147,7 +166,10 @@ async def delete_university(university_id: str, db: AsyncSession = Depends(get_d
 
 
 @router.get("/regions/list")
-async def get_regions(db: AsyncSession = Depends(get_db)):
+async def get_regions(
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("view_universities")),
+):
     result = await db.execute(
         select(University.region_id)
         .where(University.region_id.isnot(None))
@@ -161,7 +183,8 @@ async def upload_logo(
     university_id: str,
     request: Request,
     file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_universities")),
 ):
     # Verify university
     result = await db.execute(select(University).where(University.id == university_id))

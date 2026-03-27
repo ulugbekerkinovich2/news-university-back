@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from pydantic import BaseModel
 
+from app.api.endpoints.auth import require_permission
 from app.core.database import get_db
 from app.models import ScrapeJob, ScrapeJobEvent, University, JobStatus, JobScope, ScrapeStage
 
@@ -73,6 +74,7 @@ async def list_jobs(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("view_dashboard")),
 ):
     q = select(ScrapeJob)
     if status:
@@ -84,7 +86,10 @@ async def list_jobs(
 
 
 @router.get("/active", response_model=List[ScrapeJobOut])
-async def active_jobs(db: AsyncSession = Depends(get_db)):
+async def active_jobs(
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("view_dashboard")),
+):
     result = await db.execute(
         select(ScrapeJob)
         .where(ScrapeJob.status.in_([JobStatus.QUEUED, JobStatus.RUNNING]))
@@ -97,6 +102,7 @@ async def active_jobs(db: AsyncSession = Depends(get_db)):
 async def live_jobs(
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("view_dashboard")),
 ):
     """Return recent jobs (active + last N finished) with university name + events.
     Designed for real-time dashboard polling — single request for everything."""
@@ -161,6 +167,7 @@ async def live_jobs(
 async def create_job(
     data: ScrapeJobCreate,
     db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_scraping")),
 ):
     from app.tasks.scraper import launch_scrape_job
 
@@ -212,7 +219,11 @@ async def create_job(
 
 
 @router.put("/{job_id}/cancel", response_model=ScrapeJobOut)
-async def cancel_job(job_id: str, db: AsyncSession = Depends(get_db)):
+async def cancel_job(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_scraping")),
+):
     result = await db.execute(select(ScrapeJob).where(ScrapeJob.id == job_id))
     job = result.scalar_one_or_none()
     if not job:
@@ -225,7 +236,11 @@ async def cancel_job(job_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{job_id}/events", response_model=List[ScrapeJobEventOut])
-async def get_job_events(job_id: str, db: AsyncSession = Depends(get_db)):
+async def get_job_events(
+    job_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("view_dashboard")),
+):
     result = await db.execute(
         select(ScrapeJobEvent)
         .where(ScrapeJobEvent.job_id == job_id)

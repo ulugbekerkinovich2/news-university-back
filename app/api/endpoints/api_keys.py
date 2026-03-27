@@ -6,10 +6,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from pydantic import BaseModel
 
+from app.api.endpoints.auth import require_permission
 from app.core.database import get_db
 from app.models import ApiKey, User
 
-router = APIRouter(prefix="/api-keys", tags=["API Keys"])
+router = APIRouter(
+    prefix="/api-keys",
+    tags=["API Keys"],
+    dependencies=[Depends(require_permission("manage_api_keys"))],
+)
 
 
 class ApiKeyCreate(BaseModel):
