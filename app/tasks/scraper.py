@@ -518,23 +518,82 @@ def _extract_date(soup: BeautifulSoup) -> Optional[datetime]:
     return None
 
 
-def _extract_og_image(soup: BeautifulSoup) -> Optional[str]:
-    """Extract og:image or first article image."""
-    og = soup.find("meta", property="og:image")
-    if og:
-        content = og.get("content", "").strip()
-        if content and not content.startswith(("data:", "javascript:")):
-            return content
-    # first article/main img
-    for container in ["article", "main", "section"]:
-        el = soup.find(container)
-        if el:
-            img = el.find("img", src=True)
-            if img:
-                src = img["src"].strip()
-                if src and not src.startswith(("data:", "javascript:")):
-                    return src
-    return None
+def _normalize_media_url(base_url: str, candidate: Optional[str]) -> Optional[str]:
+    value = (candidate or "").strip()
+    if not value or value.startswith(("data:", "javascript:", "blob:")):
+        return None
+    if value.startswith("//"):
+        value = "https:" + value
+    normalized = urljoin(base_url, value)
+    normalized_lower = normalized.lower()
+    if any(marker in normalized_lower for marker in ["/logo", "/icon", "/favicon", "placeholder", "avatar"]):
+        return None
+    return normalized
+
+
+def _extract_srcset_candidate(srcset: str) -> Optional[str]:
+    if not srcset:
+        return None
+    candidates = []
+    for part in srcset.split(","):
+        segment = part.strip().split(" ")[0]
+        if segment:
+            candidates.append(segment)
+    return candidates[-1] if candidates else None
+
+
+def _extract_image_candidates(soup: BeautifulSoup, base_url: str) -> List[str]:
+    candidates: List[str] = []
+
+    def add(candidate: Optional[str]):
+        normalized = _normalize_media_url(base_url, candidate)
+        if normalized and normalized not in candidates:
+            candidates.append(normalized)
+
+    for attr in [("meta", {"property": "og:image"}), ("meta", {"name": "twitter:image"}), ("meta", {"itemprop": "image"})]:
+        tag = soup.find(attr[0], attrs=attr[1])
+        if tag:
+            add(tag.get("content"))
+
+    selector_candidates = [
+        "article img",
+        "main img",
+        "[class*='content'] img",
+        "[class*='detail'] img",
+        "[class*='event'] img",
+        "[class*='news'] img",
+        "[class*='post'] img",
+        "figure img",
+        ".swiper-slide img",
+        ".gallery img",
+        "img",
+    ]
+    for selector in selector_candidates:
+        for img in soup.select(selector):
+            add(img.get("src"))
+            add(img.get("data-src"))
+            add(img.get("data-original"))
+            add(img.get("data-lazy-src"))
+            add(_extract_srcset_candidate(img.get("srcset", "")))
+            add(_extract_srcset_candidate(img.get("data-srcset", "")))
+
+    for anchor in soup.find_all("a", href=True):
+        href = anchor.get("href", "").strip()
+        if re.search(r"\.(jpg|jpeg|png|webp|gif)(\?.*)?$", href, re.IGNORECASE):
+            add(href)
+
+    for node in soup.find_all(style=True):
+        match = re.search(r'background-image\s*:\s*url\((["\']?)(.+?)\1\)', node.get("style", ""))
+        if match:
+            add(match.group(2))
+
+    return candidates
+
+
+def _extract_og_image(soup: BeautifulSoup, base_url: str) -> Optional[str]:
+    """Extract the most likely article hero image."""
+    candidates = _extract_image_candidates(soup, base_url)
+    return candidates[0] if candidates else None
 
 
 def _detect_language(text: str) -> str:
@@ -574,6 +633,7 @@ def _is_invalid_article_payload(title: str, content_text: str, url: str) -> bool
     invalid_title_markers = {
         "error 404", "404", "page not found", "not found",
         "access denied", "forbidden", "service unavailable",
+        "yangilik haqida", "detail", "batafsil",
     }
     if title_lower in invalid_title_markers:
         return True
@@ -583,6 +643,9 @@ def _is_invalid_article_payload(title: str, content_text: str, url: str) -> bool
         "menyu", "biz haqimizda", "infratuzilma", "hamkorlik", "qabul 2026",
         "admissions", "student life", "trening va joylashtirish",
         "yangiliklar va voqealar", "school of engineering",
+        "foydali veb saytlar", "rasmiy havolalar", "bizga qo'ng'iroq qiling",
+        "bizga 24/7 xabar yuboring", "moliya vazirligi g'aznachiligi",
+        "institutimizni joylashgan joyi", "yangilik haqida",
     ]
     boilerplate_hits = sum(1 for marker in boilerplate_markers if marker in content_lower)
     if boilerplate_hits >= 5:
@@ -592,11 +655,60 @@ def _is_invalid_article_payload(title: str, content_text: str, url: str) -> bool
     if len(content_lower) < 180:
         return True
 
+    if title_lower in {"yangilik haqida", "detail"} and len(content_lower) < 1200:
+        return True
+
+    footer_hits = sum(
+        1 for marker in [
+            "bizga qo'ng'iroq qiling",
+            "bizga 24/7 xabar yuboring",
+            "institutimizni joylashgan joyi",
+            "foydali veb saytlar",
+            "rasmiy havolalar",
+        ] if marker in content_lower
+    )
+    if footer_hits >= 3:
+        return True
+
     if url.lower().endswith((".html", "/index")) and "news" not in url.lower() and "yangilik" not in url.lower():
         if boilerplate_hits >= 3:
             return True
 
     return False
+
+
+def _clean_extracted_text(text: str) -> str:
+    if not text:
+        return ""
+
+    noisy_line_markers = [
+        "bizga qo'ng'iroq qiling",
+        "bizga 24/7 xabar yuboring",
+        "institutimizni joylashgan joyi",
+        "foydali veb saytlar",
+        "rasmiy havolalar",
+        "moliya vazirligi g'aznachiligi",
+        "telegram",
+        "instagram",
+        "facebook",
+        "youtube",
+    ]
+
+    cleaned_lines: List[str] = []
+    seen = set()
+    for raw_line in text.splitlines():
+        line = re.sub(r"\s+", " ", raw_line).strip()
+        if len(line) < 3:
+            continue
+        lowered = line.lower()
+        if any(marker in lowered for marker in noisy_line_markers):
+            continue
+        if line in seen:
+            continue
+        seen.add(line)
+        cleaned_lines.append(line)
+
+    return "\n".join(cleaned_lines).strip()
 
 
 def _extract_article(html: str, url: str) -> dict:
@@ -630,6 +742,8 @@ def _extract_article(html: str, url: str) -> dict:
                 content_text = el.get_text("\n", strip=True)[:10000]
                 break
 
+    content_text = _clean_extracted_text(content_text)
+
     published_at = None
     if meta and meta.date:
         try:
@@ -651,7 +765,7 @@ def _extract_article(html: str, url: str) -> dict:
         else:
             summary = content_text[:300].strip()
 
-    og_image = _extract_og_image(soup)
+    og_image = _extract_og_image(soup, url)
     language = _detect_language(content_text or title)
     
     # Enforce slug uniqueness by appending URL hash
@@ -662,17 +776,7 @@ def _extract_article(html: str, url: str) -> dict:
     slug = f"{slug_base}-{url_hash}"
 
     # Plural images for gallery
-    images = []
-    for container_tag in ["article", "main", '[class*="content"]', '[class*="news"]']:
-        # bs4 select supports css classes
-        cont = soup.select_one(container_tag) if "[" in container_tag else soup.find(container_tag)
-        if cont:
-            for img in cont.find_all("img", src=True):
-                src = img["src"].strip()
-                if src and not src.startswith(("data:", "javascript:")):
-                    full_img = urljoin(url, src)
-                    if full_img not in images:
-                        images.append(full_img)
+    images = _extract_image_candidates(soup, url)
 
     return {
         "title": title[:500],
