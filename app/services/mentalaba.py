@@ -5,7 +5,7 @@ import re
 from datetime import datetime
 from html import escape
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 import httpx
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -297,6 +297,59 @@ def _build_meta(title: str, text: str) -> Dict[str, str]:
     }
 
 
+def _normalize_language(value: Optional[str]) -> str:
+    raw = _normalize_text(value)
+    if raw in {"uz", "uzbek", "oz", "o'zbek", "ozbek"}:
+        return "uz"
+    if raw in {"ru", "rus", "russian", "рус", "ru-ru"}:
+        return "ru"
+    if raw in {"en", "eng", "english", "en-us", "en-gb"}:
+        return "en"
+    return "unknown"
+
+
+def _post_content_bundle(post: NewsPost) -> Dict[str, str]:
+    title = (post.title or "").strip()
+    html = post.content_html or _html_from_text(post.content_text or post.summary or title)
+    plain = _strip_html(post.content_text or post.summary or html or title)
+    meta = _build_meta(title, plain)
+    return {
+        "title": title,
+        "html": html,
+        "meta_title": meta["title"],
+        "meta_description": meta["description"],
+        "meta_keywords": meta["keywords"],
+    }
+
+
+async def _load_translation_candidates(db: AsyncSession, post: NewsPost) -> List[NewsPost]:
+    identifiers: Set[str] = {
+        value.strip()
+        for value in [post.source_url, post.canonical_url]
+        if value and value.strip()
+    }
+    if not identifiers:
+        return [post]
+
+    result = await db.execute(
+        select(NewsPost)
+        .where(NewsPost.university_id == post.university_id)
+        .where(
+            or_(
+                NewsPost.source_url.in_(identifiers),
+                NewsPost.canonical_url.in_(identifiers),
+            )
+        )
+    )
+    posts = result.scalars().all()
+    if not posts:
+        return [post]
+
+    by_id = {item.id: item for item in posts}
+    by_id[post.id] = post
+    return list(by_id.values())
+
+
 def match_tag_ids(post: NewsPost, tags: List[Dict[str, Any]]) -> List[int]:
     corpus = _normalize_text(" ".join(filter(None, [post.title, post.summary, post.content_text])))
     years_in_content = set(re.findall(r"\b20\d{2}\b", " ".join(filter(None, [post.title or "", post.summary or "", post.content_text or ""]))))
@@ -448,28 +501,34 @@ async def load_exportable_posts(
     return posts, total
 
 
-def _build_payload(post: NewsPost, header_image: str, tag_ids: List[int]) -> Dict[str, Any]:
-    title = (post.title or "").strip()
-    html = post.content_html or _html_from_text(post.content_text or post.summary or title)
-    plain = _strip_html(post.content_text or post.summary or html or title)
-    meta = _build_meta(title, plain)
+def _build_payload(post: NewsPost, header_image: str, tag_ids: List[int], localized_posts: List[NewsPost]) -> Dict[str, Any]:
+    localized: Dict[str, Dict[str, str]] = {}
+    for candidate in localized_posts:
+        lang = _normalize_language(candidate.language)
+        if lang in {"uz", "ru", "en"} and lang not in localized:
+            localized[lang] = _post_content_bundle(candidate)
+
+    primary = _post_content_bundle(post)
+    for lang in ("uz", "ru", "en"):
+        localized.setdefault(lang, primary)
+
     return {
         "header_image": header_image,
-        "title_uz": title,
-        "title_ru": title,
-        "title_en": title,
-        "description_uz": html,
-        "description_ru": html,
-        "description_en": html,
-        "mtdt_title_uz": meta["title"],
-        "mtdt_title_ru": meta["title"],
-        "mtdt_title_en": meta["title"],
-        "mtdt_description_uz": meta["description"],
-        "mtdt_description_ru": meta["description"],
-        "mtdt_description_en": meta["description"],
-        "mtdt_keywords_uz": meta["keywords"],
-        "mtdt_keywords_ru": meta["keywords"],
-        "mtdt_keywords_en": meta["keywords"],
+        "title_uz": localized["uz"]["title"],
+        "title_ru": localized["ru"]["title"],
+        "title_en": localized["en"]["title"],
+        "description_uz": localized["uz"]["html"],
+        "description_ru": localized["ru"]["html"],
+        "description_en": localized["en"]["html"],
+        "mtdt_title_uz": localized["uz"]["meta_title"],
+        "mtdt_title_ru": localized["ru"]["meta_title"],
+        "mtdt_title_en": localized["en"]["meta_title"],
+        "mtdt_description_uz": localized["uz"]["meta_description"],
+        "mtdt_description_ru": localized["ru"]["meta_description"],
+        "mtdt_description_en": localized["en"]["meta_description"],
+        "mtdt_keywords_uz": localized["uz"]["meta_keywords"],
+        "mtdt_keywords_ru": localized["ru"]["meta_keywords"],
+        "mtdt_keywords_en": localized["en"]["meta_keywords"],
         "relation_id": post.university.mentalaba_id if post.university else None,
         "status": MENTALABA_DEFAULT_NEWS_STATUS,
         "tag_ids": tag_ids,
@@ -502,7 +561,8 @@ async def export_post_to_mentalaba(db: AsyncSession, post_id: str) -> NewsPost:
 
     try:
         header_image, image_trace = await _upload_remote_image(prepared["cover_image_url"])
-        payload = _build_payload(post, header_image, prepared["suggested_tag_ids"])
+        localized_posts = await _load_translation_candidates(db, post)
+        payload = _build_payload(post, header_image, prepared["suggested_tag_ids"], localized_posts)
         post.syndication_image_payload = _safe_json(image_trace["request"])
         post.syndication_image_response = _safe_json(image_trace["response"])
         async with httpx.AsyncClient(timeout=60.0, headers=_auth_headers()) as client:
