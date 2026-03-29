@@ -41,6 +41,10 @@ class MentalabaPostStatusPatch(BaseModel):
     syndication_status: str
 
 
+class MentalabaSelectedSendPayload(BaseModel):
+    post_ids: List[str]
+
+
 class MentalabaSendResult(BaseModel):
     processed: int
     exported: int
@@ -99,16 +103,21 @@ async def sync_remote_universities(db: AsyncSession = Depends(get_db)):
 @router.get("/news-queue", response_model=PaginatedMentalabaQueue)
 async def news_queue(
     syndication_status: str = Query("PENDING"),
+    syndication_statuses: Optional[str] = Query(None),
     eligible_only: bool = Query(False),
     university_id: Optional[str] = Query(None),
+    search: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
+    parsed_statuses = [item.strip() for item in (syndication_statuses or "").split(",") if item.strip()]
     posts, count = await load_exportable_posts(
         db,
         syndication_status=syndication_status,
+        syndication_statuses=parsed_statuses,
         university_id=university_id,
+        search=search,
         page=page,
         limit=limit,
     )
@@ -188,6 +197,26 @@ async def send_bulk(
         .limit(limit)
     )
     post_ids = result.scalars().all()
+    exported = 0
+    failed = 0
+    for post_id in post_ids:
+        post = await export_post_to_mentalaba(db, post_id)
+        if post.syndication_status == "EXPORTED":
+            exported += 1
+        else:
+            failed += 1
+    return {"processed": len(post_ids), "exported": exported, "failed": failed}
+
+
+@router.post("/news/send-selected", response_model=MentalabaSendResult)
+async def send_selected(
+    payload: MentalabaSelectedSendPayload,
+    db: AsyncSession = Depends(get_db),
+):
+    if not has_mentalaba_token():
+        raise HTTPException(status_code=400, detail="Mentalaba token configured emas")
+
+    post_ids = [post_id for post_id in payload.post_ids if post_id]
     exported = 0
     failed = 0
     for post_id in post_ids:

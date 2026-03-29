@@ -7,7 +7,7 @@ from html import escape
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import httpx
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -409,7 +409,9 @@ async def load_exportable_posts(
     db: AsyncSession,
     *,
     syndication_status: Optional[str] = None,
+    syndication_statuses: Optional[List[str]] = None,
     university_id: Optional[str] = None,
+    search: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
 ) -> Tuple[List[NewsPost], int]:
@@ -420,8 +422,24 @@ async def load_exportable_posts(
     )
     if syndication_status and syndication_status != "ALL":
         q = q.where(NewsPost.syndication_status == syndication_status.upper())
+    if syndication_statuses:
+        normalized_statuses = [status.upper() for status in syndication_statuses if status and status.upper() != "ALL"]
+        if normalized_statuses:
+            q = q.where(NewsPost.syndication_status.in_(normalized_statuses))
     if university_id:
         q = q.where(NewsPost.university_id == university_id)
+    if search:
+        pattern = f"%{search.strip()}%"
+        q = q.join(University, University.id == NewsPost.university_id).where(
+            or_(
+                NewsPost.title.ilike(pattern),
+                func.coalesce(NewsPost.summary, "").ilike(pattern),
+                func.coalesce(NewsPost.content_text, "").ilike(pattern),
+                func.coalesce(University.name_uz, "").ilike(pattern),
+                func.coalesce(University.name_ru, "").ilike(pattern),
+                func.coalesce(University.name_en, "").ilike(pattern),
+            )
+        )
     base_query = q
     total = (await db.execute(select(func.count()).select_from(base_query.subquery()))).scalar() or 0
     q = base_query.order_by(NewsPost.published_at.desc().nullsfirst(), NewsPost.created_at.desc()).offset((page - 1) * limit).limit(limit)
