@@ -56,3 +56,23 @@ def _migrate_existing_schema(sync_conn):
 
     for statement in statements:
         sync_conn.exec_driver_sql(statement)
+
+    if "news_posts" not in tables:
+        return
+
+    news_columns = {col["name"] for col in inspector.get_columns("news_posts")}
+    news_statements = []
+    if "moderation_status" not in news_columns:
+        news_statements.append(
+            "ALTER TABLE news_posts ADD COLUMN moderation_status VARCHAR(32) NOT NULL DEFAULT 'APPROVED'"
+        )
+    if "moderation_notes" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN moderation_notes TEXT")
+    if "moderated_by" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN moderated_by VARCHAR")
+    if "moderated_at" not in news_columns:
+        timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
+        news_statements.append(f"ALTER TABLE news_posts ADD COLUMN moderated_at {timestamp_type}")
+
+    for statement in news_statements:
+        sync_conn.exec_driver_sql(statement)

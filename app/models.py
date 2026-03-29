@@ -111,6 +111,10 @@ class NewsPost(Base):
     language = Column(String, default="unknown")
     cover_image_id = Column(String, ForeignKey("media_assets.id", ondelete="SET NULL"), nullable=True)
     hash_fingerprint = Column(String, nullable=True, index=True)
+    moderation_status = Column(String, default="PENDING", nullable=False, index=True)
+    moderation_notes = Column(Text, nullable=True)
+    moderated_by = Column(String, nullable=True)
+    moderated_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

@@ -20,6 +20,7 @@ LOGIN_LOCK_MINUTES = 15
 
 ADMIN_PERMISSIONS = [
     "view_universities",
+    "manage_news",
     "manage_users",
     "manage_universities",
     "manage_scraping",

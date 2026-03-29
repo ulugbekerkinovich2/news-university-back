@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, exists
 from sqlalchemy.orm import selectinload
 from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime
 import re
 
+from app.api.endpoints.auth import require_permission
 from app.core.database import get_db
 from app.models import NewsPost, MediaAsset, University
 
@@ -52,6 +53,10 @@ class NewsPostOut(BaseModel):
     canonical_url: Optional[str]
     language: Optional[str]
     cover_image_id: Optional[str]
+    moderation_status: Optional[str]
+    moderation_notes: Optional[str]
+    moderated_by: Optional[str]
+    moderated_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
     university: Optional[UniversitySmall]
@@ -65,6 +70,11 @@ class NewsPostOut(BaseModel):
 class PaginatedNews(BaseModel):
     data: List[NewsPostOut]
     count: int
+
+
+class NewsModerationUpdate(BaseModel):
+    moderation_status: str
+    moderation_notes: Optional[str] = None
 
 
 def _slugify(value: Optional[str]) -> Optional[str]:
@@ -169,6 +179,8 @@ async def list_news(
     if to_date:
         q = q.where(NewsPost.published_at <= to_date)
 
+    q = q.where(NewsPost.moderation_status == "APPROVED")
+
     total_q = select(func.count()).select_from(q.subquery())
     count = (await db.execute(total_q)).scalar()
 
@@ -192,11 +204,80 @@ async def get_news(post_id: str, db: AsyncSession = Depends(get_db)):
     post = result.scalar_one_or_none()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
+    if post.moderation_status != "APPROVED":
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+
+@router.get("/review/queue", response_model=PaginatedNews)
+async def review_queue(
+    moderation_status: str = Query("PENDING"),
+    has_image: bool = Query(True),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_news")),
+):
+    q = select(NewsPost).options(
+        selectinload(NewsPost.university),
+        selectinload(NewsPost.cover_image),
+        selectinload(NewsPost.media_assets),
+    ).where(NewsPost.moderation_status == moderation_status.upper())
+
+    if has_image:
+        has_media_asset = exists(
+            select(MediaAsset.id).where(MediaAsset.post_id == NewsPost.id)
+        )
+        q = q.where((NewsPost.cover_image_id.isnot(None)) | has_media_asset)
+
+    total_q = select(func.count()).select_from(q.subquery())
+    count = (await db.execute(total_q)).scalar()
+    offset = (page - 1) * limit
+    q = q.order_by(NewsPost.published_at.desc().nullsfirst(), NewsPost.created_at.desc()).offset(offset).limit(limit)
+    result = await db.execute(q)
+    return {"data": result.scalars().all(), "count": count}
+
+
+@router.put("/{post_id}/review", response_model=NewsPostOut)
+async def review_post(
+    post_id: str,
+    payload: NewsModerationUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(require_permission("manage_news")),
+):
+    normalized_status = (payload.moderation_status or "").upper()
+    if normalized_status not in {"PENDING", "APPROVED", "REJECTED", "TRASH"}:
+        raise HTTPException(status_code=400, detail="Invalid moderation status")
+
+    result = await db.execute(
+        select(NewsPost)
+        .options(
+            selectinload(NewsPost.university),
+            selectinload(NewsPost.cover_image),
+            selectinload(NewsPost.media_assets),
+        )
+        .where(NewsPost.id == post_id)
+    )
+    post = result.scalar_one_or_none()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    post.moderation_status = normalized_status
+    post.moderation_notes = payload.moderation_notes
+    post.moderated_by = current_user.id
+    post.moderated_at = datetime.utcnow()
+    post.updated_at = datetime.utcnow()
+    await db.commit()
+    await db.refresh(post)
     return post
 
 
 @router.delete("/{post_id}", status_code=204)
-async def delete_news(post_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_news(
+    post_id: str,
+    db: AsyncSession = Depends(get_db),
+    _: object = Depends(require_permission("manage_news")),
+):
     result = await db.execute(select(NewsPost).where(NewsPost.id == post_id))
     post = result.scalar_one_or_none()
     if not post:

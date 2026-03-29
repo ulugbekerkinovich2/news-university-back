@@ -1105,8 +1105,9 @@ async def _scrape_university_async(university_id: str, job_id: str):
 
                         # Save cover image as MediaAsset
                         cover_image_id = None
-                        if article["og_image"]:
-                            img_url = urljoin(url, article["og_image"])
+                        primary_image = article["og_image"] or (article.get("images") or [None])[0]
+                        if primary_image:
+                            img_url = urljoin(url, primary_image)
                             existing_img = await db.execute(
                                 select(MediaAsset).where(MediaAsset.original_url == img_url)
                             )
@@ -1132,6 +1133,7 @@ async def _scrape_university_async(university_id: str, job_id: str):
                             published_at=article["published_at"],
                             language=article["language"],
                             hash_fingerprint=fingerprint,
+                            moderation_status="PENDING",
                             cover_image_id=cover_image_id,
                         )
                         db.add(post)
