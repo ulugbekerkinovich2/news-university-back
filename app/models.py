@@ -68,6 +68,7 @@ class University(Base):
     # Metadata for external API linking
     mt_id = Column(Integer, nullable=True, index=True)
     mt_slug = Column(String, nullable=True, index=True)
+    mentalaba_id = Column(Integer, nullable=True, index=True)
 
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
@@ -115,6 +116,10 @@ class NewsPost(Base):
     moderation_notes = Column(Text, nullable=True)
     moderated_by = Column(String, nullable=True)
     moderated_at = Column(DateTime, nullable=True)
+    syndication_status = Column(String, default="DRAFT", nullable=False, index=True)
+    syndication_remote_id = Column(String, nullable=True, index=True)
+    syndication_last_error = Column(Text, nullable=True)
+    syndication_pushed_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

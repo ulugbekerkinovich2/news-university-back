@@ -73,6 +73,28 @@ def _migrate_existing_schema(sync_conn):
     if "moderated_at" not in news_columns:
         timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
         news_statements.append(f"ALTER TABLE news_posts ADD COLUMN moderated_at {timestamp_type}")
+    if "syndication_status" not in news_columns:
+        news_statements.append(
+            "ALTER TABLE news_posts ADD COLUMN syndication_status VARCHAR(32) NOT NULL DEFAULT 'DRAFT'"
+        )
+    if "syndication_remote_id" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_remote_id VARCHAR")
+    if "syndication_last_error" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_last_error TEXT")
+    if "syndication_pushed_at" not in news_columns:
+        timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
+        news_statements.append(f"ALTER TABLE news_posts ADD COLUMN syndication_pushed_at {timestamp_type}")
 
     for statement in news_statements:
+        sync_conn.exec_driver_sql(statement)
+
+    if "universities" not in tables:
+        return
+
+    university_columns = {col["name"] for col in inspector.get_columns("universities")}
+    university_statements = []
+    if "mentalaba_id" not in university_columns:
+        university_statements.append("ALTER TABLE universities ADD COLUMN mentalaba_id INTEGER")
+
+    for statement in university_statements:
         sync_conn.exec_driver_sql(statement)

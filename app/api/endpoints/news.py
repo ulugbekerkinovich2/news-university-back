@@ -57,6 +57,10 @@ class NewsPostOut(BaseModel):
     moderation_notes: Optional[str]
     moderated_by: Optional[str]
     moderated_at: Optional[datetime]
+    syndication_status: Optional[str]
+    syndication_remote_id: Optional[str]
+    syndication_last_error: Optional[str]
+    syndication_pushed_at: Optional[datetime]
     created_at: datetime
     updated_at: datetime
     university: Optional[UniversitySmall]
@@ -268,6 +272,8 @@ async def review_post(
     post.moderated_at = datetime.utcnow()
     post.updated_at = datetime.utcnow()
     await db.commit()
+    from app.api.endpoints.mentalaba import update_post_after_moderation
+    await update_post_after_moderation(post.id)
     await db.refresh(post)
     return post
 

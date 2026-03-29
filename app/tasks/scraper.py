@@ -1134,6 +1134,7 @@ async def _scrape_university_async(university_id: str, job_id: str):
                             language=article["language"],
                             hash_fingerprint=fingerprint,
                             moderation_status="PENDING",
+                            syndication_status="DRAFT",
                             cover_image_id=cover_image_id,
                         )
                         db.add(post)
