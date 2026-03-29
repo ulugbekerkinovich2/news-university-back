@@ -35,6 +35,13 @@ def _normalize_text(value: Optional[str]) -> str:
     return text
 
 
+def _tag_stem(value: Optional[str]) -> str:
+    normalized = _normalize_text(value)
+    normalized = re.sub(r"\b20\d{2}\b", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized
+
+
 def _slugify(value: Optional[str]) -> str:
     normalized = _normalize_text(value)
     normalized = re.sub(r"[^a-z0-9]+", "-", normalized)
@@ -291,44 +298,73 @@ def _build_meta(title: str, text: str) -> Dict[str, str]:
 
 def match_tag_ids(post: NewsPost, tags: List[Dict[str, Any]]) -> List[int]:
     corpus = _normalize_text(" ".join(filter(None, [post.title, post.summary, post.content_text])))
+    years_in_content = set(re.findall(r"\b20\d{2}\b", " ".join(filter(None, [post.title or "", post.summary or "", post.content_text or ""]))))
     matched: List[int] = []
-    for tag in tags:
-        if tag.get("status") != "active":
-            continue
+    semantic_groups = {
+        "admission": ["qabul", "admission", "abituriyent", "abiturent", "abiturient", "прием", "абитуриент"],
+        "grant": ["grant", "stipend", "scholarship", "stipendiya", "грант", "стипенд"],
+        "transfer": ["kochirish", "ko'chirish", "transfer", "перевод"],
+        "mandate": ["mandat", "mandate"],
+        "certificate": ["sertifikat", "certificate"],
+        "score_quota": ["kvota", "ball", "quota", "score", "kirish ballari"],
+        "student": ["talaba", "student", "студент"],
+        "internship": ["amaliyot", "internship", "практика"],
+        "olympiad": ["olimpiada", "olympics", "олимпиада"],
+        "cooperation": ["hamkorlik", "cooperation", "сотрудничество"],
+        "technology": ["technology", "texnolog", "технолог"],
+        "education": ["talim", "ta'lim", "education", "образование"],
+        "university": ["universitet", "university", "университет"],
+    }
+
+    active_tags = [tag for tag in tags if tag.get("status") == "active"]
+
+    for tag in active_tags:
         values = [
             _normalize_text(tag.get("tag_uz")),
             _normalize_text(tag.get("tag_ru")),
             _normalize_text(tag.get("tag_en")),
         ]
+        year_tokens = set()
+        for value in values:
+            year_tokens.update(re.findall(r"\b20\d{2}\b", value))
+
+        # Don't bind year-specific tags unless the same year is present in the content.
+        if year_tokens and not (year_tokens & years_in_content):
+            continue
+
         for value in values:
             if value and value in corpus:
                 matched.append(int(tag["id"]))
                 break
 
+    for group_keywords in semantic_groups.values():
+        if not any(keyword in corpus for keyword in group_keywords):
+            continue
+        for tag in active_tags:
+            values = [
+                _normalize_text(tag.get("tag_uz")),
+                _normalize_text(tag.get("tag_ru")),
+                _normalize_text(tag.get("tag_en")),
+                _tag_stem(tag.get("tag_uz")),
+                _tag_stem(tag.get("tag_ru")),
+                _tag_stem(tag.get("tag_en")),
+            ]
+            if any(value and any(keyword in value for keyword in group_keywords) for value in values):
+                year_tokens = set()
+                for value in values[:3]:
+                    year_tokens.update(re.findall(r"\b20\d{2}\b", value))
+                if year_tokens and not (year_tokens & years_in_content):
+                    continue
+                matched.append(int(tag["id"]))
+
     fallbacks: List[int] = []
-    for tag in tags:
-        value_uz = _normalize_text(tag.get("tag_uz"))
-        value_en = _normalize_text(tag.get("tag_en"))
+    for tag in active_tags:
+        value_uz = _tag_stem(tag.get("tag_uz"))
+        value_en = _tag_stem(tag.get("tag_en"))
         if value_uz == "ta'lim" or value_en == "education":
             fallbacks.append(int(tag["id"]))
         if value_uz.strip() == "universitet" or value_en == "university":
             fallbacks.append(int(tag["id"]))
-
-    if "qabul" in corpus or "admission" in corpus or "abituriyent" in corpus:
-        for tag in tags:
-            tag_blob = " ".join(
-                _normalize_text(tag.get(key)) for key in ("tag_uz", "tag_ru", "tag_en")
-            )
-            if "qabul" in tag_blob or "admission" in tag_blob or "abituriyent" in tag_blob:
-                matched.append(int(tag["id"]))
-
-    if "grant" in corpus or "stipend" in corpus or "scholarship" in corpus:
-        for tag in tags:
-            tag_blob = " ".join(
-                _normalize_text(tag.get(key)) for key in ("tag_uz", "tag_ru", "tag_en")
-            )
-            if "grant" in tag_blob or "stipend" in tag_blob or "scholarship" in tag_blob:
-                matched.append(int(tag["id"]))
 
     return _dedupe_ints(matched or fallbacks)[:6]
 
