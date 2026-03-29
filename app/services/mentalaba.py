@@ -466,6 +466,7 @@ async def load_exportable_posts(
     syndication_statuses: Optional[List[str]] = None,
     university_id: Optional[str] = None,
     search: Optional[str] = None,
+    mapping_missing_only: bool = False,
     page: int = 1,
     limit: int = 20,
 ) -> Tuple[List[NewsPost], int]:
@@ -474,6 +475,9 @@ async def load_exportable_posts(
         selectinload(NewsPost.cover_image),
         selectinload(NewsPost.media_assets),
     )
+    needs_university_join = bool(search or mapping_missing_only)
+    if needs_university_join:
+        q = q.join(University, University.id == NewsPost.university_id)
     if syndication_status and syndication_status != "ALL":
         q = q.where(NewsPost.syndication_status == syndication_status.upper())
     if syndication_statuses:
@@ -482,9 +486,11 @@ async def load_exportable_posts(
             q = q.where(NewsPost.syndication_status.in_(normalized_statuses))
     if university_id:
         q = q.where(NewsPost.university_id == university_id)
+    if mapping_missing_only:
+        q = q.where(University.mentalaba_id.is_(None))
     if search:
         pattern = f"%{search.strip()}%"
-        q = q.join(University, University.id == NewsPost.university_id).where(
+        q = q.where(
             or_(
                 NewsPost.title.ilike(pattern),
                 func.coalesce(NewsPost.summary, "").ilike(pattern),

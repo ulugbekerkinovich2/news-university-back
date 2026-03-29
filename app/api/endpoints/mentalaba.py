@@ -107,6 +107,7 @@ async def news_queue(
     eligible_only: bool = Query(False),
     university_id: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
+    mapping_missing_only: bool = Query(False),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -118,6 +119,7 @@ async def news_queue(
         syndication_statuses=parsed_statuses,
         university_id=university_id,
         search=search,
+        mapping_missing_only=mapping_missing_only,
         page=page,
         limit=limit,
     )
