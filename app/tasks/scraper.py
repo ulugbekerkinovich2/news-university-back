@@ -34,8 +34,11 @@ from langdetect import detect, LangDetectException
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import select, update
+from sqlalchemy.orm import selectinload
 
 from app.tasks.celery_app import celery_app
+from app.models import NewsPost
+from app.services.mentalaba import export_post_to_mentalaba, has_mentalaba_token, refresh_post_syndication_state
 
 # ── Config ─────────────────────────────────────────────────────────────────
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/app.db")
@@ -47,6 +50,8 @@ RETRY_BACKOFF = 2.0            # seconds (doubled each retry)
 DISCOVERY_CONCURRENCY = 3
 ARTICLE_FETCH_CONCURRENCY = 6
 SCRAPER_WORKERS = 6
+AUTO_APPROVE_SCRAPED_NEWS = os.getenv("AUTO_APPROVE_SCRAPED_NEWS", "true").lower() == "true"
+AUTO_EXPORT_SCRAPED_NEWS = os.getenv("AUTO_EXPORT_SCRAPED_NEWS", "true").lower() == "true"
 
 # Patterns that signal a news/article URL on Uzbek university sites
 # Covers: /news/, /yangilik/, /xabar/, /maqola/, /press/, /blog/
@@ -898,6 +903,31 @@ async def _scrape_university_async(university_id: str, job_id: str):
         skipped_count = 0
         error_count = 0
         attempted_site_search = False
+        saved_post_ids: List[str] = []
+
+        async def _dispatch_saved_posts(post_ids: List[str]) -> None:
+            if not post_ids or not AUTO_APPROVE_SCRAPED_NEWS:
+                return
+
+            for post_id in post_ids:
+                result = await db.execute(
+                    select(NewsPost)
+                    .options(
+                        selectinload(NewsPost.university),
+                        selectinload(NewsPost.cover_image),
+                        selectinload(NewsPost.media_assets),
+                    )
+                    .where(NewsPost.id == post_id)
+                )
+                saved_post = result.scalar_one_or_none()
+                if not saved_post:
+                    continue
+
+                await refresh_post_syndication_state(db, saved_post)
+                await db.commit()
+
+                if AUTO_EXPORT_SCRAPED_NEWS and has_mentalaba_token() and saved_post.syndication_status == "PENDING":
+                    await export_post_to_mentalaba(db, post_id)
 
         try:
             limits = httpx.Limits(max_connections=20, max_keepalive_connections=10)
@@ -1133,11 +1163,14 @@ async def _scrape_university_async(university_id: str, job_id: str):
                             published_at=article["published_at"],
                             language=article["language"],
                             hash_fingerprint=fingerprint,
-                            moderation_status="PENDING",
+                            moderation_status="APPROVED" if AUTO_APPROVE_SCRAPED_NEWS else "PENDING",
+                            moderated_by="system:auto" if AUTO_APPROVE_SCRAPED_NEWS else None,
+                            moderated_at=datetime.utcnow() if AUTO_APPROVE_SCRAPED_NEWS else None,
                             syndication_status="DRAFT",
                             cover_image_id=cover_image_id,
                         )
                         db.add(post)
+                        saved_post_ids.append(post.id)
                         saved_count += 1
 
                         # Save other images as MediaAsset
@@ -1174,6 +1207,7 @@ async def _scrape_university_async(university_id: str, job_id: str):
                         error_count += 1
 
                 await db.commit()
+                await _dispatch_saved_posts(saved_post_ids)
 
                 # ── DONE ─────────────────────────────────────────────────
                 await _add_event(
