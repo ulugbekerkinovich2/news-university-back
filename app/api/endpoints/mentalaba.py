@@ -12,6 +12,7 @@ from app.api.endpoints.news import NewsPostOut
 from app.core.database import AsyncSessionLocal, get_db
 from app.models import NewsPost
 from app.services.mentalaba import (
+    deactivate_exported_post,
     export_post_to_mentalaba,
     get_cached_tags,
     get_overview,
@@ -143,6 +144,10 @@ async def update_queue_status(post_id: str, payload: MentalabaPostStatusPatch, d
     if normalized not in {"DRAFT", "PENDING", "REJECTED", "FAILED"}:
         raise HTTPException(status_code=400, detail="Invalid syndication status")
 
+    if normalized == "REJECTED" and post.syndication_remote_id:
+        post = await deactivate_exported_post(db, post)
+        return post
+
     post.syndication_status = normalized
     if normalized != "FAILED":
         post.syndication_last_error = None
@@ -208,6 +213,9 @@ async def update_post_after_moderation(post_id: str) -> None:
         )
         post = result.scalar_one_or_none()
         if not post:
+            return
+        if post.moderation_status in {"REJECTED", "TRASH"} and post.syndication_remote_id:
+            await deactivate_exported_post(db, post)
             return
         await refresh_post_syndication_state(db, post)
         mode = await get_export_mode(db)

@@ -227,6 +227,20 @@ async def _upload_remote_image(image_url: str) -> str:
     return str(path)
 
 
+async def update_remote_news_status(remote_id: str, status_value: str) -> Dict[str, Any]:
+    payload = {"status": status_value}
+    last_error: Optional[Exception] = None
+    async with httpx.AsyncClient(timeout=45.0, headers=_auth_headers()) as client:
+        for method in (client.patch, client.put):
+            try:
+                response = await method(f"{MENTALABA_BASE_URL}/news/{remote_id}", json=payload)
+                response.raise_for_status()
+                return response.json()
+            except Exception as exc:
+                last_error = exc
+    raise RuntimeError(f"Remote status update failed: {last_error}")
+
+
 def _build_meta(title: str, text: str) -> Dict[str, str]:
     clean_title = (title or "").strip()[:255]
     clean_text = (text or "").strip()
@@ -402,6 +416,29 @@ async def export_post_to_mentalaba(db: AsyncSession, post_id: str) -> NewsPost:
         post.syndication_remote_id = str(remote.get("id") or "")
         post.syndication_last_error = None
         post.syndication_pushed_at = datetime.utcnow()
+        await db.commit()
+        await db.refresh(post)
+        return post
+    except Exception as exc:
+        post.syndication_status = "FAILED"
+        post.syndication_last_error = str(exc)
+        await db.commit()
+        await db.refresh(post)
+        return post
+
+
+async def deactivate_exported_post(db: AsyncSession, post: NewsPost) -> NewsPost:
+    if not post.syndication_remote_id:
+        post.syndication_status = "REJECTED"
+        post.syndication_last_error = None
+        await db.commit()
+        await db.refresh(post)
+        return post
+
+    try:
+        await update_remote_news_status(post.syndication_remote_id, "non-active")
+        post.syndication_status = "REJECTED"
+        post.syndication_last_error = None
         await db.commit()
         await db.refresh(post)
         return post
