@@ -24,6 +24,7 @@ class UniversityOut(BaseModel):
     logo_url: Optional[str]
     mt_id: Optional[int]
     mt_slug: Optional[str]
+    mentalaba_id: Optional[int]
     scrape_status: str
     last_scraped_at: Optional[datetime]
     last_error_message: Optional[str]
@@ -43,6 +44,7 @@ class UniversityCreate(BaseModel):
     website: Optional[str] = None
     mt_id: Optional[int] = None
     mt_slug: Optional[str] = None
+    mentalaba_id: Optional[int] = None
 
 
 class UniversityUpdate(BaseModel):
@@ -55,6 +57,7 @@ class UniversityUpdate(BaseModel):
     scrape_status: Optional[str] = None
     mt_id: Optional[int] = None
     mt_slug: Optional[str] = None
+    mentalaba_id: Optional[int] = None
 
 
 class PaginatedUniversities(BaseModel):
@@ -124,6 +127,7 @@ async def create_university(
         name_en=data.name_en,
         name_ru=data.name_ru,
         website=data.website,
+        mentalaba_id=data.mentalaba_id,
         scrape_status=ScrapeStatus.NO_SOURCE if not data.website else ScrapeStatus.IDLE,
     )
     db.add(uni)
