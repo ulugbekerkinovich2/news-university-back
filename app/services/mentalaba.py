@@ -409,6 +409,7 @@ async def load_exportable_posts(
     db: AsyncSession,
     *,
     syndication_status: Optional[str] = None,
+    university_id: Optional[str] = None,
     page: int = 1,
     limit: int = 20,
 ) -> Tuple[List[NewsPost], int]:
@@ -419,6 +420,8 @@ async def load_exportable_posts(
     )
     if syndication_status and syndication_status != "ALL":
         q = q.where(NewsPost.syndication_status == syndication_status.upper())
+    if university_id:
+        q = q.where(NewsPost.university_id == university_id)
     base_query = q
     total = (await db.execute(select(func.count()).select_from(base_query.subquery()))).scalar() or 0
     q = base_query.order_by(NewsPost.published_at.desc().nullsfirst(), NewsPost.created_at.desc()).offset((page - 1) * limit).limit(limit)

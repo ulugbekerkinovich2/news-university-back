@@ -100,6 +100,7 @@ async def sync_remote_universities(db: AsyncSession = Depends(get_db)):
 async def news_queue(
     syndication_status: str = Query("PENDING"),
     eligible_only: bool = Query(False),
+    university_id: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
@@ -107,6 +108,7 @@ async def news_queue(
     posts, count = await load_exportable_posts(
         db,
         syndication_status=syndication_status,
+        university_id=university_id,
         page=page,
         limit=limit,
     )
@@ -172,6 +174,7 @@ async def send_post(post_id: str, db: AsyncSession = Depends(get_db)):
 @router.post("/news/send-bulk", response_model=MentalabaSendResult)
 async def send_bulk(
     limit: int = Query(20, ge=1, le=100),
+    university_id: Optional[str] = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
     if not has_mentalaba_token():
@@ -180,6 +183,7 @@ async def send_bulk(
     result = await db.execute(
         select(NewsPost.id)
         .where(NewsPost.syndication_status == "PENDING")
+        .where(NewsPost.university_id == university_id if university_id else True)
         .order_by(NewsPost.published_at.desc().nullsfirst(), NewsPost.created_at.desc())
         .limit(limit)
     )
