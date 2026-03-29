@@ -1,4 +1,5 @@
 import os
+import asyncio
 from dotenv import load_dotenv
 load_dotenv()  # loads backend/.env
 
@@ -11,6 +12,8 @@ from sqladmin import Admin, ModelView
 from app.core.database import engine, init_db
 from app.api import api_router
 from app.models import University, NewsPost, ScrapeJob, ScrapeJobEvent, MediaAsset, User, ApiKey
+from app.core.database import AsyncSessionLocal
+from app.services.mentalaba import backfill_unsent_exports
 
 
 from fastapi.staticfiles import StaticFiles
@@ -22,6 +25,11 @@ os.makedirs("static/logos", exist_ok=True)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    async def run_mentalaba_backfill():
+        async with AsyncSessionLocal() as db:
+            await backfill_unsent_exports(db)
+
+    asyncio.create_task(run_mentalaba_backfill())
     yield
 
 

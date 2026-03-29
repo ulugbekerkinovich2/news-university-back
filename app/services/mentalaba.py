@@ -25,6 +25,7 @@ TAGS_CACHE_KEY = "mentalaba_tags_cache"
 UNIVERSITIES_CACHE_KEY = "mentalaba_universities_cache"
 LAST_TAGS_SYNC_KEY = "mentalaba_tags_last_synced_at"
 LAST_UNIVERSITIES_SYNC_KEY = "mentalaba_universities_last_synced_at"
+AUTO_EXPORT_BACKFILL_LIMIT = int(os.getenv("AUTO_EXPORT_BACKFILL_LIMIT", "300"))
 
 
 def _normalize_text(value: Optional[str]) -> str:
@@ -661,4 +662,48 @@ async def get_overview(db: AsyncSession) -> Dict[str, Any]:
         "news_by_status": by_status,
         "last_tags_sync_at": await _get_setting(db, LAST_TAGS_SYNC_KEY),
         "last_universities_sync_at": await _get_setting(db, LAST_UNIVERSITIES_SYNC_KEY),
+    }
+
+
+async def backfill_unsent_exports(db: AsyncSession, limit: int = AUTO_EXPORT_BACKFILL_LIMIT) -> Dict[str, int]:
+    mode = await get_export_mode(db)
+    if mode != "auto" or not has_mentalaba_token():
+        return {"scanned": 0, "queued": 0, "exported": 0, "failed": 0}
+
+    result = await db.execute(
+        select(NewsPost)
+        .options(
+            selectinload(NewsPost.university),
+            selectinload(NewsPost.cover_image),
+            selectinload(NewsPost.media_assets),
+        )
+        .where(NewsPost.moderation_status == "APPROVED")
+        .where(NewsPost.syndication_status.in_(["DRAFT", "PENDING", "FAILED"]))
+        .order_by(NewsPost.published_at.desc().nullsfirst(), NewsPost.created_at.desc())
+        .limit(limit)
+    )
+    posts = result.scalars().all()
+
+    queued = 0
+    exported = 0
+    failed = 0
+
+    for post in posts:
+        await refresh_post_syndication_state(db, post)
+        await db.commit()
+        if post.syndication_status != "PENDING":
+            continue
+
+        queued += 1
+        exported_post = await export_post_to_mentalaba(db, post.id)
+        if exported_post.syndication_status == "EXPORTED":
+            exported += 1
+        else:
+            failed += 1
+
+    return {
+        "scanned": len(posts),
+        "queued": queued,
+        "exported": exported,
+        "failed": failed,
     }
