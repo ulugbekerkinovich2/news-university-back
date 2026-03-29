@@ -61,6 +61,12 @@ class NewsPostOut(BaseModel):
     syndication_remote_id: Optional[str]
     syndication_last_error: Optional[str]
     syndication_pushed_at: Optional[datetime]
+    syndication_request_payload: Optional[str]
+    syndication_response_payload: Optional[str]
+    syndication_image_payload: Optional[str]
+    syndication_image_response: Optional[str]
+    syndication_last_action: Optional[str]
+    syndication_last_status_code: Optional[int]
     created_at: datetime
     updated_at: datetime
     university: Optional[UniversitySmall]

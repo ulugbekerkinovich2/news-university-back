@@ -120,6 +120,12 @@ class NewsPost(Base):
     syndication_remote_id = Column(String, nullable=True, index=True)
     syndication_last_error = Column(Text, nullable=True)
     syndication_pushed_at = Column(DateTime, nullable=True)
+    syndication_request_payload = Column(Text, nullable=True)
+    syndication_response_payload = Column(Text, nullable=True)
+    syndication_image_payload = Column(Text, nullable=True)
+    syndication_image_response = Column(Text, nullable=True)
+    syndication_last_action = Column(String, nullable=True)
+    syndication_last_status_code = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
 

@@ -84,6 +84,18 @@ def _migrate_existing_schema(sync_conn):
     if "syndication_pushed_at" not in news_columns:
         timestamp_type = "TIMESTAMP" if dialect == "postgresql" else "DATETIME"
         news_statements.append(f"ALTER TABLE news_posts ADD COLUMN syndication_pushed_at {timestamp_type}")
+    if "syndication_request_payload" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_request_payload TEXT")
+    if "syndication_response_payload" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_response_payload TEXT")
+    if "syndication_image_payload" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_image_payload TEXT")
+    if "syndication_image_response" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_image_response TEXT")
+    if "syndication_last_action" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_last_action VARCHAR(64)")
+    if "syndication_last_status_code" not in news_columns:
+        news_statements.append("ALTER TABLE news_posts ADD COLUMN syndication_last_status_code INTEGER")
 
     for statement in news_statements:
         sync_conn.exec_driver_sql(statement)

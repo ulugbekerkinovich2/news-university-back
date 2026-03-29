@@ -69,6 +69,13 @@ def _dedupe_ints(values: List[int]) -> List[int]:
     return result
 
 
+def _safe_json(value: Any) -> str:
+    try:
+        return json.dumps(value, ensure_ascii=False, indent=2, default=str)
+    except Exception:
+        return str(value)
+
+
 async def _get_setting(db: AsyncSession, key: str, default: Optional[str] = None) -> Optional[str]:
     result = await db.execute(select(SystemSetting).where(SystemSetting.key == key))
     row = result.scalar_one_or_none()
@@ -201,7 +208,7 @@ def _resolve_local_static_path(image_url: str) -> Optional[Path]:
     return None
 
 
-async def _upload_remote_image(image_url: str) -> str:
+async def _upload_remote_image(image_url: str) -> Tuple[str, Dict[str, Any]]:
     local_path = _resolve_local_static_path(image_url)
     if local_path and local_path.exists():
         file_bytes = local_path.read_bytes()
@@ -219,6 +226,16 @@ async def _upload_remote_image(image_url: str) -> str:
         "associated_with": MENTALABA_UPLOAD_ASSOCIATED_WITH,
         "usage": MENTALABA_UPLOAD_USAGE,
     }
+    request_meta = {
+        "method": "POST",
+        "url": f"{MENTALABA_BASE_URL}/images/upload",
+        "associated_with": MENTALABA_UPLOAD_ASSOCIATED_WITH,
+        "usage": MENTALABA_UPLOAD_USAGE,
+        "filename": filename,
+        "mime_type": mime_type or "image/jpeg",
+        "source_image_url": image_url,
+        "size_bytes": len(file_bytes),
+    }
     async with httpx.AsyncClient(timeout=60.0, headers=_auth_headers()) as client:
         response = await client.post(f"{MENTALABA_BASE_URL}/images/upload", data=data, files=files)
         if response.status_code >= 400:
@@ -229,10 +246,14 @@ async def _upload_remote_image(image_url: str) -> str:
     path = payload.get("path")
     if not path:
         raise RuntimeError("Mentalaba image upload returned no path")
-    return str(path)
+    return str(path), {
+        "request": request_meta,
+        "response": payload,
+        "status_code": response.status_code,
+    }
 
 
-async def update_remote_news_status(remote_id: str, status_value: str) -> Dict[str, Any]:
+async def update_remote_news_status(remote_id: str, status_value: str) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     payload = {"status": status_value}
     last_error: Optional[Exception] = None
     async with httpx.AsyncClient(timeout=45.0, headers=_auth_headers()) as client:
@@ -241,7 +262,16 @@ async def update_remote_news_status(remote_id: str, status_value: str) -> Dict[s
                 response = await method(f"{MENTALABA_BASE_URL}/news/{remote_id}", json=payload)
                 if response.status_code >= 400:
                     raise RuntimeError(f"{response.status_code}: {response.text}")
-                return response.json()
+                body = response.json()
+                return body, {
+                    "request": {
+                        "method": method.__name__.upper(),
+                        "url": f"{MENTALABA_BASE_URL}/news/{remote_id}",
+                        "json": payload,
+                    },
+                    "response": body,
+                    "status_code": response.status_code,
+                }
             except Exception as exc:
                 last_error = exc
     raise RuntimeError(f"Remote status update failed: {last_error}")
@@ -408,12 +438,15 @@ async def export_post_to_mentalaba(db: AsyncSession, post_id: str) -> NewsPost:
     if not prepared["is_exportable"]:
         post.syndication_status = "FAILED"
         post.syndication_last_error = prepared["export_reason"]
+        post.syndication_last_action = "eligibility_check_failed"
         await db.commit()
         return post
 
     try:
-        header_image = await _upload_remote_image(prepared["cover_image_url"])
+        header_image, image_trace = await _upload_remote_image(prepared["cover_image_url"])
         payload = _build_payload(post, header_image, prepared["suggested_tag_ids"])
+        post.syndication_image_payload = _safe_json(image_trace["request"])
+        post.syndication_image_response = _safe_json(image_trace["response"])
         async with httpx.AsyncClient(timeout=60.0, headers=_auth_headers()) as client:
             response = await client.post(f"{MENTALABA_BASE_URL}/news", json=payload)
             if response.status_code >= 400:
@@ -423,12 +456,21 @@ async def export_post_to_mentalaba(db: AsyncSession, post_id: str) -> NewsPost:
         post.syndication_remote_id = str(remote.get("id") or "")
         post.syndication_last_error = None
         post.syndication_pushed_at = datetime.utcnow()
+        post.syndication_request_payload = _safe_json({
+            "method": "POST",
+            "url": f"{MENTALABA_BASE_URL}/news",
+            "json": payload,
+        })
+        post.syndication_response_payload = _safe_json(remote)
+        post.syndication_last_action = "create_remote_news"
+        post.syndication_last_status_code = response.status_code
         await db.commit()
         await db.refresh(post)
         return post
     except Exception as exc:
         post.syndication_status = "FAILED"
         post.syndication_last_error = str(exc)
+        post.syndication_last_action = "create_remote_news_failed"
         await db.commit()
         await db.refresh(post)
         return post
@@ -438,20 +480,26 @@ async def deactivate_exported_post(db: AsyncSession, post: NewsPost) -> NewsPost
     if not post.syndication_remote_id:
         post.syndication_status = "REJECTED"
         post.syndication_last_error = None
+        post.syndication_last_action = "deactivate_skip_remote"
         await db.commit()
         await db.refresh(post)
         return post
 
     try:
-        await update_remote_news_status(post.syndication_remote_id, "non-active")
+        _, trace = await update_remote_news_status(post.syndication_remote_id, "non-active")
         post.syndication_status = "REJECTED"
         post.syndication_last_error = None
+        post.syndication_request_payload = _safe_json(trace["request"])
+        post.syndication_response_payload = _safe_json(trace["response"])
+        post.syndication_last_action = "deactivate_remote"
+        post.syndication_last_status_code = trace["status_code"]
         await db.commit()
         await db.refresh(post)
         return post
     except Exception as exc:
         post.syndication_status = "FAILED"
         post.syndication_last_error = str(exc)
+        post.syndication_last_action = "deactivate_remote_failed"
         await db.commit()
         await db.refresh(post)
         return post
