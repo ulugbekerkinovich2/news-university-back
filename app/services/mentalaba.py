@@ -1,4 +1,5 @@
 import json
+import mimetypes
 import os
 import re
 from datetime import datetime
@@ -212,14 +213,18 @@ async def _upload_remote_image(image_url: str) -> str:
             file_bytes = response.content
             filename = Path(image_url.split("?")[0]).name or "image.jpg"
 
-    files = {"file": (filename, file_bytes, "application/octet-stream")}
+    mime_type, _ = mimetypes.guess_type(filename)
+    files = {"file": (filename, file_bytes, mime_type or "image/jpeg")}
     data = {
         "associated_with": MENTALABA_UPLOAD_ASSOCIATED_WITH,
         "usage": MENTALABA_UPLOAD_USAGE,
     }
     async with httpx.AsyncClient(timeout=60.0, headers=_auth_headers()) as client:
         response = await client.post(f"{MENTALABA_BASE_URL}/images/upload", data=data, files=files)
-        response.raise_for_status()
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"Image upload failed ({response.status_code}): {response.text}"
+            )
         payload = response.json()
     path = payload.get("path")
     if not path:
@@ -234,7 +239,8 @@ async def update_remote_news_status(remote_id: str, status_value: str) -> Dict[s
         for method in (client.patch, client.put):
             try:
                 response = await method(f"{MENTALABA_BASE_URL}/news/{remote_id}", json=payload)
-                response.raise_for_status()
+                if response.status_code >= 400:
+                    raise RuntimeError(f"{response.status_code}: {response.text}")
                 return response.json()
             except Exception as exc:
                 last_error = exc
@@ -410,7 +416,8 @@ async def export_post_to_mentalaba(db: AsyncSession, post_id: str) -> NewsPost:
         payload = _build_payload(post, header_image, prepared["suggested_tag_ids"])
         async with httpx.AsyncClient(timeout=60.0, headers=_auth_headers()) as client:
             response = await client.post(f"{MENTALABA_BASE_URL}/news", json=payload)
-            response.raise_for_status()
+            if response.status_code >= 400:
+                raise RuntimeError(f"News create failed ({response.status_code}): {response.text}")
             remote = response.json()
         post.syndication_status = "EXPORTED"
         post.syndication_remote_id = str(remote.get("id") or "")
