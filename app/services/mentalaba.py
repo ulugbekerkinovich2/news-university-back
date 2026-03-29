@@ -18,6 +18,7 @@ MENTALABA_BASE_URL = os.getenv("MENTALABA_API_BASE", "https://api.mentalaba.uz/v
 MENTALABA_TOKEN = os.getenv("MENTALABA_API_TOKEN", "")
 MENTALABA_UPLOAD_ASSOCIATED_WITH = os.getenv("MENTALABA_UPLOAD_ASSOCIATED_WITH", "test")
 MENTALABA_UPLOAD_USAGE = os.getenv("MENTALABA_UPLOAD_USAGE", "test_gallery")
+MENTALABA_DEFAULT_NEWS_STATUS = os.getenv("MENTALABA_DEFAULT_NEWS_STATUS", "non-active")
 
 EXPORT_MODE_KEY = "mentalaba_export_mode"
 TAGS_CACHE_KEY = "mentalaba_tags_cache"
@@ -470,7 +471,7 @@ def _build_payload(post: NewsPost, header_image: str, tag_ids: List[int]) -> Dic
         "mtdt_keywords_ru": meta["keywords"],
         "mtdt_keywords_en": meta["keywords"],
         "relation_id": post.university.mentalaba_id if post.university else None,
-        "status": "active",
+        "status": MENTALABA_DEFAULT_NEWS_STATUS,
         "tag_ids": tag_ids,
         "views_count": 0,
     }
