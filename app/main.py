@@ -21,16 +21,37 @@ from fastapi.staticfiles import StaticFiles
 # Ensure required directories exist
 os.makedirs("data", exist_ok=True)
 os.makedirs("static/logos", exist_ok=True)
+MENTALABA_BACKFILL_INTERVAL_SECONDS = int(os.getenv("MENTALABA_BACKFILL_INTERVAL_SECONDS", "120"))
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    async def run_mentalaba_backfill():
-        async with AsyncSessionLocal() as db:
-            await backfill_unsent_exports(db)
+    stop_event = asyncio.Event()
 
-    asyncio.create_task(run_mentalaba_backfill())
-    yield
+    async def run_mentalaba_backfill_loop():
+        while not stop_event.is_set():
+            try:
+                async with AsyncSessionLocal() as db:
+                    await backfill_unsent_exports(db)
+            except Exception:
+                # Keep the loop alive even if one sweep fails.
+                pass
+
+            try:
+                await asyncio.wait_for(stop_event.wait(), timeout=MENTALABA_BACKFILL_INTERVAL_SECONDS)
+            except asyncio.TimeoutError:
+                continue
+
+    backfill_task = asyncio.create_task(run_mentalaba_backfill_loop())
+    try:
+        yield
+    finally:
+        stop_event.set()
+        backfill_task.cancel()
+        try:
+            await backfill_task
+        except asyncio.CancelledError:
+            pass
 
 
 app = FastAPI(
