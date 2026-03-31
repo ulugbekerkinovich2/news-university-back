@@ -2,11 +2,13 @@ import json
 import mimetypes
 import os
 import re
+from io import BytesIO
 from datetime import datetime
 from html import escape
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 import httpx
+from PIL import Image
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -16,8 +18,8 @@ from app.models import MediaAsset, NewsPost, SystemSetting, University
 
 MENTALABA_BASE_URL = os.getenv("MENTALABA_API_BASE", "https://api.mentalaba.uz/v1").rstrip("/")
 MENTALABA_TOKEN = os.getenv("MENTALABA_API_TOKEN", "")
-MENTALABA_UPLOAD_ASSOCIATED_WITH = os.getenv("MENTALABA_UPLOAD_ASSOCIATED_WITH", "test")
-MENTALABA_UPLOAD_USAGE = os.getenv("MENTALABA_UPLOAD_USAGE", "test_gallery")
+MENTALABA_UPLOAD_ASSOCIATED_WITH = os.getenv("MENTALABA_UPLOAD_ASSOCIATED_WITH", "news")
+MENTALABA_UPLOAD_USAGE = os.getenv("MENTALABA_UPLOAD_USAGE", "news_cover")
 MENTALABA_DEFAULT_NEWS_STATUS = os.getenv("MENTALABA_DEFAULT_NEWS_STATUS", "non-active")
 
 EXPORT_MODE_KEY = "mentalaba_export_mode"
@@ -217,6 +219,47 @@ def _resolve_local_static_path(image_url: str) -> Optional[Path]:
     return None
 
 
+def _compress_image_for_upload(file_bytes: bytes, filename: str) -> Tuple[bytes, str, str, Dict[str, Any]]:
+    original_size = len(file_bytes)
+    metadata: Dict[str, Any] = {
+        "original_size_bytes": original_size,
+        "transformed": False,
+    }
+
+    try:
+        image = Image.open(BytesIO(file_bytes))
+        image.load()
+
+        max_side = 1600
+        if max(image.size) > max_side:
+            image.thumbnail((max_side, max_side))
+
+        if image.mode not in {"RGB", "L"}:
+            background = Image.new("RGB", image.size, (255, 255, 255))
+            alpha_source = image.convert("RGBA")
+            background.paste(alpha_source, mask=alpha_source.getchannel("A"))
+            image = background
+        elif image.mode == "L":
+            image = image.convert("RGB")
+
+        buffer = BytesIO()
+        image.save(buffer, format="JPEG", quality=82, optimize=True)
+        compressed = buffer.getvalue()
+        compressed_filename = f"{Path(filename).stem or 'image'}.jpg"
+        metadata.update({
+            "transformed": True,
+            "width": image.size[0],
+            "height": image.size[1],
+            "compressed_size_bytes": len(compressed),
+        })
+        return compressed, compressed_filename, "image/jpeg", metadata
+    except Exception as exc:
+        mime_type, _ = mimetypes.guess_type(filename)
+        metadata["fallback_reason"] = str(exc)
+        metadata["compressed_size_bytes"] = original_size
+        return file_bytes, filename, mime_type or "image/jpeg", metadata
+
+
 async def _upload_remote_image(image_url: str) -> Tuple[str, Dict[str, Any]]:
     local_path = _resolve_local_static_path(image_url)
     if local_path and local_path.exists():
@@ -229,8 +272,8 @@ async def _upload_remote_image(image_url: str) -> Tuple[str, Dict[str, Any]]:
             file_bytes = response.content
             filename = Path(image_url.split("?")[0]).name or "image.jpg"
 
-    mime_type, _ = mimetypes.guess_type(filename)
-    files = {"file": (filename, file_bytes, mime_type or "image/jpeg")}
+    compressed_bytes, upload_filename, mime_type, compression_meta = _compress_image_for_upload(file_bytes, filename)
+    files = {"file": (upload_filename, compressed_bytes, mime_type)}
     data = {
         "associated_with": MENTALABA_UPLOAD_ASSOCIATED_WITH,
         "usage": MENTALABA_UPLOAD_USAGE,
@@ -240,10 +283,11 @@ async def _upload_remote_image(image_url: str) -> Tuple[str, Dict[str, Any]]:
         "url": f"{MENTALABA_BASE_URL}/images/upload",
         "associated_with": MENTALABA_UPLOAD_ASSOCIATED_WITH,
         "usage": MENTALABA_UPLOAD_USAGE,
-        "filename": filename,
-        "mime_type": mime_type or "image/jpeg",
+        "filename": upload_filename,
+        "mime_type": mime_type,
         "source_image_url": image_url,
-        "size_bytes": len(file_bytes),
+        "size_bytes": len(compressed_bytes),
+        "compression": compression_meta,
     }
     async with httpx.AsyncClient(timeout=60.0, headers=_auth_headers()) as client:
         response = await client.post(f"{MENTALABA_BASE_URL}/images/upload", data=data, files=files)
