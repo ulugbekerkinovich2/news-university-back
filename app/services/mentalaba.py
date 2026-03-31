@@ -21,6 +21,7 @@ MENTALABA_TOKEN = os.getenv("MENTALABA_API_TOKEN", "")
 MENTALABA_UPLOAD_ASSOCIATED_WITH = os.getenv("MENTALABA_UPLOAD_ASSOCIATED_WITH", "news")
 MENTALABA_UPLOAD_USAGE = os.getenv("MENTALABA_UPLOAD_USAGE", "news_cover")
 MENTALABA_DEFAULT_NEWS_STATUS = os.getenv("MENTALABA_DEFAULT_NEWS_STATUS", "non-active")
+MENTALABA_MAX_IMAGE_BYTES = int(os.getenv("MENTALABA_MAX_IMAGE_BYTES", str(1024 * 1024)))
 
 EXPORT_MODE_KEY = "mentalaba_export_mode"
 TAGS_CACHE_KEY = "mentalaba_tags_cache"
@@ -242,15 +243,46 @@ def _compress_image_for_upload(file_bytes: bytes, filename: str) -> Tuple[bytes,
         elif image.mode == "L":
             image = image.convert("RGB")
 
-        buffer = BytesIO()
-        image.save(buffer, format="JPEG", quality=82, optimize=True)
-        compressed = buffer.getvalue()
+        compressed = b""
+        chosen_quality = 82
+        current_size = image.size
+        attempts: List[Dict[str, Any]] = []
+
+        for max_attempts in range(6):
+            for quality in (82, 74, 66, 58, 50, 42):
+                buffer = BytesIO()
+                image.save(buffer, format="JPEG", quality=quality, optimize=True)
+                candidate = buffer.getvalue()
+                attempts.append({
+                    "quality": quality,
+                    "width": image.size[0],
+                    "height": image.size[1],
+                    "size_bytes": len(candidate),
+                })
+                compressed = candidate
+                chosen_quality = quality
+                current_size = image.size
+                if len(candidate) <= MENTALABA_MAX_IMAGE_BYTES:
+                    break
+            if len(compressed) <= MENTALABA_MAX_IMAGE_BYTES:
+                break
+
+            next_width = max(480, int(image.size[0] * 0.85))
+            next_height = max(480, int(image.size[1] * 0.85))
+            if (next_width, next_height) == image.size:
+                break
+            image = image.resize((next_width, next_height), Image.LANCZOS)
+
         compressed_filename = f"{Path(filename).stem or 'image'}.jpg"
         metadata.update({
             "transformed": True,
-            "width": image.size[0],
-            "height": image.size[1],
+            "width": current_size[0],
+            "height": current_size[1],
+            "quality": chosen_quality,
             "compressed_size_bytes": len(compressed),
+            "max_allowed_size_bytes": MENTALABA_MAX_IMAGE_BYTES,
+            "within_limit": len(compressed) <= MENTALABA_MAX_IMAGE_BYTES,
+            "attempts": attempts,
         })
         return compressed, compressed_filename, "image/jpeg", metadata
     except Exception as exc:
